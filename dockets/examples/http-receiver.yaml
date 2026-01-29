@@ -1,0 +1,63 @@
+# Example HTTP Receiver Docket
+# Receives HL7 messages via HTTP POST and forwards to EHR system
+
+name: hl7-admission-receiver
+version: 1.0.0
+type: receiver
+plugin_location: ./plugins/HL7Parser.dll
+
+# HTTP receiver configuration
+receiver:
+  type: http
+  endpoint: /receive/hl7-admissions
+  
+  authentication:
+    type: api_key
+    header: X-API-Key
+    secret_env: HL7_API_KEY
+  
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 100
+    burst_size: 20
+  
+  processing:
+    mode: async
+    timeout_seconds: 30
+    max_concurrent: 10
+
+# Forwarding destinations
+forwarding:
+  destinations:
+    - name: primary-ehr
+      type: http
+      url: https://ehr.example.com/api/admissions
+      method: POST
+      
+      retry_policy:
+        max_attempts: 3
+        backoff_strategy: exponential
+        initial_delay_seconds: 1
+        max_delay_seconds: 60
+      
+      headers:
+        Content-Type: application/json
+        Authorization: Bearer ${EHR_TOKEN}
+      
+      timeout_seconds: 30
+        
+    - name: audit-stream
+      type: kafka
+      bootstrap_servers: kafka:9092
+      topic: hl7-audit-log
+      partition_key: patient_id
+
+# Telemetry
+telemetry:
+  trace_requests: true
+  log_level: Information
+  metrics:
+    - request_count
+    - processing_duration
+    - transformation_errors
+    - forwarding_attempts

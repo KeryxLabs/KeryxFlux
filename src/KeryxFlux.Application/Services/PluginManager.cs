@@ -1,11 +1,12 @@
 using Microsoft.Extensions.Logging;
+using KeryxFlux.Domain;
 using KeryxFlux.Domain.Abstractions;
 using KeryxFlux.Domain.Models;
 using KeryxFlux.Application.FileSystem;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 
-namespace KeryxFlux.Domain.Management
+namespace KeryxFlux.Application.Services
 {
     internal sealed class PluginManager : IPluginManager
     {
@@ -108,3 +109,4 @@ namespace KeryxFlux.Domain.Management
         }
     }
 }
+

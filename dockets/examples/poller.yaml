@@ -1,0 +1,68 @@
+# Example Scheduled Poller Docket
+# Polls FHIR server every 15 minutes for new patients
+
+name: patient-sync-poller
+version: 1.0.0
+type: poller
+plugin_location: ./plugins/FhirParser.dll
+
+# Scheduling configuration
+scheduler:
+  cron_expression: "*/15 * * * *"  # Every 15 minutes
+  timezone: America/New_York
+  queue: default
+  timeout_seconds: 300
+  enabled: true
+
+# Source server configuration
+server_information:
+  name: epic-fhir
+  address: https://fhir.epic.com
+  port: 443
+  communication_type: http
+  timeout_seconds: 30
+  
+  authentication:
+    type: oauth2
+    token_url: https://oauth.epic.com/token
+    client_id_env: EPIC_CLIENT_ID
+    client_secret_env: EPIC_CLIENT_SECRET
+    scope: "patient/*.read"
+    
+  retry_policy:
+    max_attempts: 3
+    backoff_strategy: exponential
+
+# Endpoints to poll
+endpoints:
+  - name: recent-patients
+    path: /Patient?_lastUpdated=gt{last_run_time}
+    max_attempts: 3
+    is_cached: true
+    cached_property: last_run_time
+    template_arguments:
+      - name: last_run_time
+        format: "yyyy-MM-ddTHH:mm:ssZ"
+
+# Forwarding configuration
+forwarding:
+  destinations:
+    - name: patient-queue
+      type: rabbitmq
+      connection_env: RABBITMQ_CONNECTION
+      exchange: patient-updates
+      routing_key: patient.created
+      persistent: true
+      
+    - name: backup-storage
+      type: http
+      url: https://backup.example.com/api/patients
+      method: POST
+      retry_policy:
+        max_attempts: 3
+        backoff_strategy: exponential
+
+# Telemetry
+telemetry:
+  trace_requests: true
+  log_level: Information

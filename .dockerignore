@@ -1,0 +1,54 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+.vscode
+.vs
+
+# Documentation
+*.md
+docs/
+!README.md
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/.nuget/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.sln.docstates
+
+# Test files
+**/tests/
+**/*Tests/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local development
+docker-compose.override.yml
+appsettings.Development.json
+launchSettings.json
+
+# Sensitive data
+*.pfx
+*.key
+*.pem

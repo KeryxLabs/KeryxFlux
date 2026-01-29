@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using KeryxFlux.Domain;
 using KeryxFlux.Domain.Abstractions;
 using KeryxFlux.Domain.Models;
 using System.Runtime.InteropServices;
@@ -226,3 +227,4 @@ namespace KeryxFlux.Application.FileSystem
         }
     }
 }
+

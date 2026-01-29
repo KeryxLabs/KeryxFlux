@@ -1,0 +1,51 @@
+# Example RabbitMQ Consumer Docket
+# Consumes orders from RabbitMQ queue and forwards to ERP system
+
+name: order-processor
+version: 1.0.0
+type: receiver
+plugin_location: ./plugins/OrderTransformer.dll
+
+# RabbitMQ consumer configuration
+receiver:
+  type: rabbitmq
+  connection_env: RABBITMQ_CONNECTION
+  queue: incoming-orders
+  
+  consumer:
+    prefetch_count: 10
+    auto_ack: false
+    exclusive: false
+    
+  processing:
+    mode: async
+    retry_on_failure: true
+    max_retries: 3
+    dead_letter_exchange: orders-dlx
+
+# Forwarding configuration
+forwarding:
+  destinations:
+    - name: erp-system
+      type: http
+      url: https://erp.example.com/api/orders
+      method: POST
+      
+      retry_policy:
+        max_attempts: 3
+        backoff_strategy: exponential
+        
+      headers:
+        Content-Type: application/json
+        Authorization: Bearer ${ERP_TOKEN}
+
+# Error handling
+error_handling:
+  on_failure: dead_letter
+  dead_letter_queue: orders-dlq
+  alert_webhook: ${SLACK_WEBHOOK_URL}
+
+# Telemetry
+telemetry:
+  trace_requests: true
+  log_level: Information
