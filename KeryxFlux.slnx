@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/KeryxFlux.Application/KeryxFlux.Application.csproj" />
+    <Project Path="src/KeryxFlux.Contracts/KeryxFlux.Contracts.csproj" />
+    <Project Path="src/KeryxFlux.Domain/KeryxFlux.Domain.csproj" />
+    <Project Path="src/KeryxFlux.Host/KeryxFlux.Host.csproj" />
+    <Project Path="src/KeryxFlux.Infrastructure/KeryxFlux.Infrastructure.csproj" />
+  </Folder>
+</Solution>
