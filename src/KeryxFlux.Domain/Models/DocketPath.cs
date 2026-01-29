@@ -2,7 +2,7 @@ namespace KeryxFlux.Domain.Models
 {
     public readonly record struct DocketPath(string Value)
     {
-        private static readonly string[] ValidationEndings = ["rqstr-docket.yml", "rqstr-docket.yaml"];
+        private static readonly string[] ValidationEndings = [".yml", ".yaml"];
 
         public string Value { get; init; } = string.IsNullOrEmpty(Value) ?
                                                 throw new ArgumentException("Value cannot be null or empty.", nameof(Value))

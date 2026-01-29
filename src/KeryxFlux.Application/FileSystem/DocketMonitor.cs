@@ -11,44 +11,54 @@ namespace KeryxFlux.Application.FileSystem
         private readonly ILogger<DocketMonitor> _logger;
         private readonly IDocketManager _manager;
         private readonly string _rootDir;
-        private const string _ymlFilter = "*rqstr-docket.yml";
-        private const string _yAmlFilter = "*rqstr-docket.yaml";
+        
+        // Watch for all YAML files - convention: any YAML in dockets/ is a docket
+        private const string _ymlFilter = "*.yml";
+        private const string _yamlFilter = "*.yaml";
+        
         private readonly FileSystemWatcher _ymlWatcher;
-        private readonly FileSystemWatcher _yAmlWatcher;
+        private readonly FileSystemWatcher _yamlWatcher;
 
         public event EventHandler<MonitorErrorEventArgs>? OnError;
         public event EventHandler<MonitorInfoEventArgs>? OnLoaded;
         public event EventHandler<MonitorInfoEventArgs>? OnUnloaded;
         public event EventHandler<MonitorInfoEventArgs>? OnReloaded;
 
-        public DocketMonitor(ILogger<DocketMonitor> logger, IDocketManager manager, string rootDir, FileSystemWatcher ymlWatcher, FileSystemWatcher yAmlWatcher)
+        public DocketMonitor(ILogger<DocketMonitor> logger, IDocketManager manager, string rootDir)
         {
             _logger = logger;
             _manager = manager;
             _rootDir = rootDir;
+            
+            // Ensure dockets directory exists
             if (!Directory.Exists(_rootDir))
+            {
                 Directory.CreateDirectory(_rootDir);
+                _logger.LogInformation("Created dockets directory at {RootDir}", _rootDir);
+            }
 
-            _ymlWatcher = ymlWatcher;
-            _yAmlWatcher = yAmlWatcher;
+            // DocketMonitor creates and owns its FileSystemWatchers
+            _ymlWatcher = new FileSystemWatcher(_rootDir, _ymlFilter);
+            _yamlWatcher = new FileSystemWatcher(_rootDir, _yamlFilter);
         }
 
         public void Start()
         {
-            #region yAml Watcher
-            _yAmlWatcher.NotifyFilter = NotifyFilters.CreationTime
+            _logger.LogInformation("Starting DocketMonitor for directory: {RootDir}", _rootDir);
+            
+            #region yaml Watcher
+            _yamlWatcher.NotifyFilter = NotifyFilters.CreationTime
                 | NotifyFilters.DirectoryName
                 | NotifyFilters.FileName
                 | NotifyFilters.LastWrite
-                | NotifyFilters.Size
-                | NotifyFilters.Security;
+                | NotifyFilters.Size;
 
-            _yAmlWatcher.Changed += FileSystemWatcher_ChangedAsync;
-            _yAmlWatcher.Created += FileSystemWatcher_CreatedAsync;
-            _yAmlWatcher.Renamed += FileSystemWatcher_RenamedAsync;
-            _yAmlWatcher.Deleted += FileSystemWatcher_DeletedAsync;
-            _yAmlWatcher.EnableRaisingEvents = true;
-            _yAmlWatcher.IncludeSubdirectories = true;
+            _yamlWatcher.Changed += FileSystemWatcher_ChangedAsync;
+            _yamlWatcher.Created += FileSystemWatcher_CreatedAsync;
+            _yamlWatcher.Renamed += FileSystemWatcher_RenamedAsync;
+            _yamlWatcher.Deleted += FileSystemWatcher_DeletedAsync;
+            _yamlWatcher.EnableRaisingEvents = true;
+            _yamlWatcher.IncludeSubdirectories = true;
             #endregion
 
             #region yml Watcher
@@ -56,8 +66,7 @@ namespace KeryxFlux.Application.FileSystem
                 | NotifyFilters.DirectoryName
                 | NotifyFilters.FileName
                 | NotifyFilters.LastWrite
-                | NotifyFilters.Size
-                | NotifyFilters.Security;
+                | NotifyFilters.Size;
 
             _ymlWatcher.Changed += FileSystemWatcher_ChangedAsync;
             _ymlWatcher.Created += FileSystemWatcher_CreatedAsync;
@@ -86,18 +95,27 @@ namespace KeryxFlux.Application.FileSystem
 
         private void StartMonitoring()
         {
-            var files = Directory.GetFiles(_rootDir, _yAmlFilter, SearchOption.AllDirectories).ToList();
-            files.AddRange(Directory.GetFiles(_rootDir, _ymlFilter, SearchOption.AllDirectories));
+            _logger.LogInformation("Scanning for existing docket files...");
+            
+            // Load all .yaml files
+            var yamlFiles = Directory.GetFiles(_rootDir, _yamlFilter, SearchOption.AllDirectories).ToList();
+            
+            // Load all .yml files
+            var ymlFiles = Directory.GetFiles(_rootDir, _ymlFilter, SearchOption.AllDirectories);
+            yamlFiles.AddRange(ymlFiles);
 
-            foreach (var item in files)
+            _logger.LogInformation("Found {Count} docket files to load", yamlFiles.Count);
+
+            foreach (var file in yamlFiles)
             {
-                var res = LoadDocket(item);
-                if (res.IsFailure)
+                var result = LoadDocket(file);
+                if (result.IsFailure)
                 {
-
+                    _logger.LogError("Failed to load docket from {File}: {Error}", file, result.Error);
                 }
             }
 
+            _logger.LogInformation("Initial docket loading complete. Monitoring for changes...");
         }
 
         private Result LoadDocket(string file)

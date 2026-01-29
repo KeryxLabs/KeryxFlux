@@ -1,34 +1,49 @@
+using KeryxFlux.Application.Handlers;
+using KeryxFlux.Application.Services;
+using KeryxFlux.Application.FileSystem;
+using KeryxFlux.Domain.Abstractions;
+using KeryxFlux.Infrastructure.Receivers;
+using KeryxFlux.Infrastructure.Senders;
+using KeryxFlux.Host.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ProcessMessageCommandHandler).Assembly));
+
+// Add HttpClient for senders
+builder.Services.AddHttpClient();
+
+// Register core services
+builder.Services.AddSingleton<IPluginManager, PluginManager>();
+builder.Services.AddSingleton<IDocketManager, DocketManager>();
+
+// Register receivers and senders
+builder.Services.AddSingleton<KeryxFlux.Domain.Ports.IReceiver, HttpReceiver>();
+builder.Services.AddSingleton<KeryxFlux.Domain.Ports.ISender, HttpSender>();
+
+// Register DocketMonitor
+var docketsPath = Path.Combine(builder.Environment.ContentRootPath, "dockets");
+builder.Services.AddSingleton<IDocketMonitor>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<DocketMonitor>>();
+    var docketManager = sp.GetRequiredService<IDocketManager>();
+    return new DocketMonitor(logger, docketManager, docketsPath);
+});
+
+// Register orchestration as hosted service
+builder.Services.AddHostedService<DocketOrchestrationService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-});
+// Map all KeryxFlux endpoints
+app.MapKeryxFluxEndpoints();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+
+
+
+
+
+

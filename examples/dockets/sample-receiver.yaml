@@ -1,0 +1,26 @@
+name: sample-receiver
+version: 1.0.0
+type: Receiver
+
+# Plugin configuration - flat structure with snake_case
+plugin_location: plugins/KeryxFlux.Plugins.SampleReceiver.dll
+
+# Receiver configuration
+receiver:
+  type: http
+  endpoint: /receive/sample
+
+# Forwarding configuration
+forwarding:
+  destinations:
+    - name: webhook-site
+      type: http
+      url: https://webhook.site/unique-id-here  # Replace with your webhook.site URL
+      timeout_seconds: 30
+
+# Telemetry (optional)
+telemetry:
+  enabled: true
+  trace_requests: true
+
+
