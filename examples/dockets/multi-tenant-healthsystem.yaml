@@ -1,0 +1,127 @@
+# Multi-Tenant Health System Integration
+# ONE docket handles ALL facilities and endpoints!
+
+name: healthsystem-multi-tenant
+version: 1.0.0
+type: Poller
+
+plugin_location: plugins/KeryxFlux.Plugins.PaginatedExample/bin/Debug/net8.0/KeryxFlux.Plugins.PaginatedExample.dll
+
+# Base configuration shared across ALL tenants/endpoints
+base_configuration:
+  org_id: "HS-ORG-001"
+  environment: "production"
+  api_version: "R4"
+  system_name: "Epic"
+
+# Server template (variables resolved per tenant/endpoint)
+scheduler:
+  # Default cron for all tenant/endpoint combinations
+  cron_expression: "0 */30 * * * *"  # Every 30 minutes
+  
+  server:
+    name: "Epic FHIR Server"
+    # Path template with variables: {org_id}, {tenant_id}, {endpoint_id}
+    address: "https://fhir.hospital.com/org/{org_id}/facility/{tenant_id}/{endpoint_id}"
+    timeout_seconds: 60
+    
+    authentication:
+      type: "bearer"
+      secret_env: "EPIC_FHIR_TOKEN"
+
+# List of facilities to poll (tenants)
+tenants:
+  - tenant_id: "MAIN"
+    display_name: "Main Campus Hospital"
+    configuration:
+      region: "North"
+      priority: "high"
+      
+  - tenant_id: "WEST"
+    display_name: "West Campus Clinic"
+    configuration:
+      region: "South"
+      priority: "medium"
+      
+  - tenant_id: "EAST"
+    display_name: "East Campus Medical Center"
+    configuration:
+      region: "East"
+      priority: "high"
+    # Override cron for this facility (hourly instead of 30 min)
+    cron_expression: "0 0 * * * *"
+    
+  - tenant_id: "NORTH"
+    display_name: "North Urgent Care"
+    configuration:
+      region: "North"
+      priority: "low"
+
+# List of endpoints to poll for each tenant
+endpoints:
+  - endpoint_id: "Patient"
+    display_name: "Patient Demographics"
+    pagination:
+      strategy: "offset-limit"
+      page_size: 100
+      max_pages: 20
+      options:
+        use_path_parameters: "false"
+        
+  - endpoint_id: "Medication"
+    display_name: "Medication Orders"
+    pagination:
+      strategy: "cursor"
+      page_size: 50
+      max_pages: 0  # Unlimited
+      options:
+        paging_object_path: "link"
+        next_cursor_field_name: "next"
+        
+  - endpoint_id: "Encounter"
+    display_name: "Patient Encounters"
+    pagination:
+      strategy: "offset-limit"
+      page_size: 200
+      max_pages: 10
+
+# Overrides for specific tenant/endpoint combinations
+overrides:
+  # WEST facility doesn't have Medication endpoint
+  - tenant_id: "WEST"
+    endpoint_id: "Medication"
+    enabled: false
+    
+  # MAIN campus has VIP patient handling with different pagination
+  - tenant_id: "MAIN"
+    endpoint_id: "Patient"
+    configuration:
+      vip_facility: "true"
+      patient_filter: "status=active"
+    pagination:
+      page_size: 50  # Smaller batches for VIP patients
+      max_pages: 30
+      
+  # NORTH is low priority, runs less frequently
+  - tenant_id: "NORTH"
+    endpoint_id: "Encounter"
+    cron_expression: "0 0 */3 * * *"  # Every 3 hours instead of 30 min
+
+# Multi-tenant execution configuration
+multi_tenant:
+  max_parallel_jobs: 8  # Run up to 8 tenant/endpoint combos in parallel
+  fail_fast: false      # Continue on failure (partial success OK)
+  job_start_delay_ms: 500  # 500ms delay between starting each job
+
+# Global forwarding (tenant/endpoint variables available in URL)
+forwarding:
+  destinations:
+    - name: data-warehouse
+      type: http
+      # Tenant-specific destination paths
+      url: "https://warehouse.hospital.com/{org_id}/{tenant_id}/{endpoint_id}/data"
+      timeout_seconds: 120
+
+telemetry:
+  enabled: true
+  trace_requests: true

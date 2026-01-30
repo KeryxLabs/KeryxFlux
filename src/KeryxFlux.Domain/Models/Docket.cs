@@ -65,9 +65,51 @@ public sealed class Docket
     [YamlMember(Alias = "configuration")]
     public Dictionary<string, string>? Configuration { get; init; }
 
+    // ===== Multi-Tenant Polling Configuration =====
+
+    /// <summary>
+    /// Base configuration shared across all tenants/endpoints.
+    /// Individual tenant/endpoint configs can override these values.
+    /// </summary>
+    [YamlMember(Alias = "base_configuration")]
+    public Dictionary<string, string>? BaseConfiguration { get; init; }
+
+    /// <summary>
+    /// List of tenants (facilities, locations, organizations) to poll.
+    /// When combined with endpoints, creates a polling matrix.
+    /// </summary>
+    [YamlMember(Alias = "tenants")]
+    public List<TenantConfiguration>? Tenants { get; init; }
+
+    /// <summary>
+    /// List of endpoints (resources, APIs) to poll for each tenant.
+    /// Creates a tenant × endpoint matrix for parallel polling.
+    /// </summary>
+    [YamlMember(Alias = "endpoints")]
+    public List<EndpointConfiguration>? Endpoints { get; init; }
+
+    /// <summary>
+    /// Overrides for specific tenant/endpoint combinations.
+    /// Allows fine-grained control (disable, custom config, custom schedule, etc.)
+    /// </summary>
+    [YamlMember(Alias = "overrides")]
+    public List<TenantEndpointOverride>? Overrides { get; init; }
+
+    /// <summary>
+    /// Multi-tenant execution configuration (parallelism, error handling, etc.)
+    /// </summary>
+    [YamlMember(Alias = "multi_tenant")]
+    public MultiTenantConfiguration? MultiTenant { get; init; }
+
+    /// <summary>
+    /// Whether this docket uses multi-tenant configuration
+    /// </summary>
+    public bool IsMultiTenant => Tenants != null && Tenants.Count > 0 && Endpoints != null && Endpoints.Count > 0;
+
     /// <summary>
     /// Validate that the docket configuration is internally consistent
     /// </summary>
+
     public bool IsValid(out string? validationError)
     {
         if (Type == DocketType.Receiver && Receiver == null)

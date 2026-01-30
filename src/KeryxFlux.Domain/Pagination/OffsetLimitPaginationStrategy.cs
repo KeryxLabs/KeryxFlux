@@ -83,6 +83,51 @@ public sealed class OffsetLimitPaginationStrategy : IPaginationStrategy
             return null;
         }
 
+        // Check if using path-based pagination (URL contains {page} or {offset} placeholders)
+        if (_options.UsePathParameters && (baseUrl.Contains("{page}") || baseUrl.Contains("{offset}")))
+        {
+            return BuildPathBasedUrl(baseUrl, currentMetadata);
+        }
+
+        // Default: Query parameter based
+        return BuildQueryBasedUrl(baseUrl, currentMetadata);
+    }
+
+    /// <summary>
+    /// Build URL with path parameters: /api/data/{page}/{size}
+    /// </summary>
+    private string BuildPathBasedUrl(string baseUrl, PaginationMetadata currentMetadata)
+    {
+        var url = baseUrl;
+
+        // Page-based path parameters
+        if (currentMetadata.CurrentPage.HasValue && currentMetadata.PageSize.HasValue)
+        {
+            var nextPage = currentMetadata.CurrentPage.Value + 1;
+            
+            // Replace {page} or custom placeholder
+            url = url.Replace($"{{{_options.PagePathPlaceholder}}}", nextPage.ToString());
+            
+            // Replace {size} or custom placeholder  
+            url = url.Replace($"{{{_options.PageSizePathPlaceholder}}}", currentMetadata.PageSize.Value.ToString());
+        }
+        // Offset-based path parameters
+        else if (currentMetadata.Offset.HasValue && currentMetadata.PageSize.HasValue)
+        {
+            var nextOffset = currentMetadata.Offset.Value + currentMetadata.PageSize.Value;
+            
+            url = url.Replace($"{{{_options.OffsetPathPlaceholder}}}", nextOffset.ToString());
+            url = url.Replace($"{{{_options.LimitPathPlaceholder}}}", currentMetadata.PageSize.Value.ToString());
+        }
+
+        return url;
+    }
+
+    /// <summary>
+    /// Build URL with query parameters: /api/data?page=1&size=100
+    /// </summary>
+    private string BuildQueryBasedUrl(string baseUrl, PaginationMetadata currentMetadata)
+    {
         // Build URL based on page or offset
         if (currentMetadata.CurrentPage.HasValue && currentMetadata.PageSize.HasValue)
         {
@@ -106,58 +151,4 @@ public sealed class OffsetLimitPaginationStrategy : IPaginationStrategy
     }
 }
 
-/// <summary>
-/// Configuration options for offset/limit pagination
-/// </summary>
-public sealed class OffsetLimitOptions
-{
-    /// <summary>
-    /// JSON field name for current page number (default: "page")
-    /// </summary>
-    public string PageFieldName { get; set; } = "page";
 
-    /// <summary>
-    /// JSON field name for page size (default: "size")
-    /// </summary>
-    public string PageSizeFieldName { get; set; } = "size";
-
-    /// <summary>
-    /// JSON field name for total pages (default: "total_pages")
-    /// </summary>
-    public string TotalPagesFieldName { get; set; } = "total_pages";
-
-    /// <summary>
-    /// JSON field name for total count (default: "total")
-    /// </summary>
-    public string TotalCountFieldName { get; set; } = "total";
-
-    /// <summary>
-    /// JSON field name for offset (default: "offset")
-    /// </summary>
-    public string OffsetFieldName { get; set; } = "offset";
-
-    /// <summary>
-    /// Query parameter name for page (default: "page")
-    /// </summary>
-    public string PageQueryParam { get; set; } = "page";
-
-    /// <summary>
-    /// Query parameter name for page size (default: "size")
-    /// </summary>
-    public string PageSizeQueryParam { get; set; } = "size";
-
-    /// <summary>
-    /// Query parameter name for offset (default: "offset")
-    /// </summary>
-    public string OffsetQueryParam { get; set; } = "offset";
-
-    /// <summary>
-    /// Query parameter name for limit (default: "limit")
-    /// </summary>
-    public string LimitQueryParam { get; set; } = "limit";
-
-    /// <summary>
-    /// Whether pages are 0-based (true) or 1-based (false). Default: false (1-based)
-    /// </summary>
-    public bool ZeroBasedPages { get; set; } = false;
-}

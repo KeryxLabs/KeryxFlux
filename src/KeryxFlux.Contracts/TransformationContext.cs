@@ -44,8 +44,27 @@ public sealed class TransformationContext
     public IReadOnlyDictionary<string, string> DocketConfiguration { get; init; } = new Dictionary<string, string>();
 
     /// <summary>
+    /// Pagination context (if this transformation is part of a paginated workflow).
+    /// Provides plugins with awareness of which page they're processing.
+    /// </summary>
+    public PaginationContext? Pagination { get; init; }
+
+    /// <summary>
+    /// Tenant ID if this transformation is part of a multi-tenant workflow.
+    /// Example: facility code, location ID, organization ID
+    /// </summary>
+    public string? TenantId { get; init; }
+
+    /// <summary>
+    /// Endpoint ID if this transformation is part of a multi-tenant workflow.
+    /// Example: resource type, API endpoint name
+    /// </summary>
+    public string? EndpointId { get; init; }
+
+    /// <summary>
     /// Create a new transformation context
     /// </summary>
+
     public TransformationContext()
     {
     }
@@ -58,7 +77,10 @@ public sealed class TransformationContext
         string receiverType,
         string correlationId,
         IReadOnlyDictionary<string, string>? metadata = null,
-        IReadOnlyDictionary<string, string>? docketConfiguration = null)
+        IReadOnlyDictionary<string, string>? docketConfiguration = null,
+        PaginationContext? pagination = null,
+        string? tenantId = null,
+        string? endpointId = null)
     {
         return new TransformationContext
         {
@@ -67,8 +89,13 @@ public sealed class TransformationContext
             ReceivedAt = DateTimeOffset.UtcNow,
             CorrelationId = correlationId,
             Metadata = metadata ?? new Dictionary<string, string>(),
-            DocketConfiguration = docketConfiguration ?? new Dictionary<string, string>()
+            DocketConfiguration = docketConfiguration ?? new Dictionary<string, string>(),
+            Pagination = pagination,
+            TenantId = tenantId,
+            EndpointId = endpointId
         };
     }
 }
+
+
 

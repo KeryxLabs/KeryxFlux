@@ -1,0 +1,46 @@
+# Non-Standard Path Naming Example
+# API uses {p} and {s} instead of {page} and {size}
+
+name: custom-named-path-pagination
+version: 1.0.0
+type: Poller
+
+plugin_location: plugins/KeryxFlux.Plugins.PaginatedExample/bin/Debug/net8.0/KeryxFlux.Plugins.PaginatedExample.dll
+
+configuration:
+  client_id: "CLIENT123"
+
+scheduler:
+  cron_expression: "0 0 * * * *"  # Hourly
+  
+  server:
+    name: "Custom API with Non-Standard Naming"
+    # Uses {p} and {s} instead of standard {page} and {size}
+    address: "https://api.custom.com/data/{client_id}/{p}/{s}"
+    timeout_seconds: 30
+  
+  pagination:
+    strategy: "offset-limit"
+    page_size: 100
+    max_pages: 10
+    
+    options:
+      # Enable path-based pagination
+      use_path_parameters: "true"
+      
+      # Custom path placeholders matching the URL
+      page_path_placeholder: "p"   # Matches {p} in URL
+      page_size_path_placeholder: "s"  # Matches {s} in URL
+      
+      # Response uses non-standard field names too
+      page_field_name: "current_page"
+      page_size_field_name: "per_page"
+      total_pages_field_name: "page_count"
+      total_count_field_name: "total_records"
+
+forwarding:
+  destinations:
+    - name: data-warehouse
+      type: http
+      url: "https://httpbin.org/post"
+      timeout_seconds: 120

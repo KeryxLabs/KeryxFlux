@@ -1,0 +1,55 @@
+# Path-Based Pagination Example
+# Epic Medications API with pagination in the URL path
+
+name: epic-medications-path-pagination
+version: 1.0.0
+type: Poller
+
+plugin_location: plugins/KeryxFlux.Plugins.PaginatedExample/bin/Debug/net8.0/KeryxFlux.Plugins.PaginatedExample.dll
+
+configuration:
+  patient_id: "PAT123456"
+  environment: "sandbox"
+
+scheduler:
+  cron_expression: "0 */30 * * * *"  # Every 30 minutes
+  
+  server:
+    name: "Epic Medications API"
+    # URL with path placeholders: {page} and {size}
+    # Will become: /Medications/PAT123456/1/50, /Medications/PAT123456/2/50, etc.
+    address: "https://fhir.epic.com/Medications/{patient_id}/{page}/{size}"
+    timeout_seconds: 60
+    
+    authentication:
+      type: "bearer"
+      secret_env: "EPIC_ACCESS_TOKEN"
+  
+  # Path-based pagination configuration
+  pagination:
+    strategy: "offset-limit"
+    page_size: 50
+    max_pages: 20
+    
+    options:
+      # Enable path-based pagination
+      use_path_parameters: "true"
+      
+      # Path placeholders (must match server URL)
+      page_path_placeholder: "page"  # Matches {page} in URL
+      page_size_path_placeholder: "size"  # Matches {size} in URL
+      
+      # Response field names
+      page_field_name: "page"
+      page_size_field_name: "size"
+      total_pages_field_name: "total_pages"
+      
+      # 1-based page numbers
+      zero_based_pages: "false"
+
+forwarding:
+  destinations:
+    - name: medications-db
+      type: http
+      url: "https://httpbin.org/post"
+      timeout_seconds: 60

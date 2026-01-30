@@ -1,4 +1,5 @@
 using KeryxFlux.Application.Handlers;
+using KeryxFlux.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace KeryxFlux.Application;
@@ -19,6 +20,14 @@ public static class ApplicationServiceRegistration
             cfg.RegisterServicesFromAssembly(typeof(ApplicationServiceRegistration).Assembly);
         });
 
+        // Register pagination orchestrator
+        services.AddSingleton<PaginationOrchestrator>();
+
+        // Register multi-tenant expansion service
+        services.AddSingleton<MultiTenantExpansionService>();
+
         return services;
     }
 }
+
+

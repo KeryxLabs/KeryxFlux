@@ -114,13 +114,3 @@ public sealed class LinkHeaderPaginationStrategy : IPaginationStrategy
     }
 }
 
-/// <summary>
-/// Configuration options for link header pagination
-/// </summary>
-public sealed class LinkHeaderOptions
-{
-    /// <summary>
-    /// Name of the Link header (default: "Link")
-    /// </summary>
-    public string LinkHeaderName { get; set; } = "Link";
-}

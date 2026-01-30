@@ -1,0 +1,63 @@
+# Complete E2E Example: Paginated Epic FHIR Patient Sync
+
+name: epic-patient-sync-e2e
+version: 1.0.0
+type: Poller
+
+# Plugin that handles aggregated paginated data
+plugin_location: plugins/KeryxFlux.Plugins.PaginatedExample/bin/Debug/net8.0/KeryxFlux.Plugins.PaginatedExample.dll
+
+# Configuration variables for path templating and plugin logic
+configuration:
+  business_id: "12345"
+  environment: "sandbox"
+  facility_code: "MAIN"
+
+scheduler:
+  # Run every 15 minutes
+  cron_expression: "0 */15 * * * *"
+  
+  server:
+    name: "Epic FHIR Sandbox"
+    # Template will resolve to actual URL using configuration
+    address: "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4/Patient"
+    timeout_seconds: 60
+    
+    # Authentication from environment variable
+    authentication:
+      type: "bearer"
+      secret_env: "EPIC_ACCESS_TOKEN"  # Set this environment variable
+  
+  # PAGINATION CONFIGURATION
+  pagination:
+    strategy: "offset-limit"
+    page_size: 20  # Epic allows up to 100, using 20 for testing
+    max_pages: 5   # Safety limit (20 items × 5 pages = 100 patients max)
+    
+    # Epic FHIR-specific pagination options
+    options:
+      # Epic uses these field names in responses
+      page_field_name: "page"
+      page_size_field_name: "size"
+      total_pages_field_name: "total_pages"
+      total_count_field_name: "total"
+      
+      # Epic uses _count instead of size for query param
+      page_query_param: "page"
+      page_size_query_param: "_count"
+      
+      # Epic uses 1-based page numbers
+      zero_based_pages: "false"
+
+# Where to send the aggregated, transformed data
+forwarding:
+  destinations:
+    - name: internal-patient-db
+      type: http
+      # Template variables resolved at runtime
+      url: "https://httpbin.org/post"  # Using httpbin for testing
+      timeout_seconds: 120
+
+telemetry:
+  enabled: true
+  trace_requests: true

@@ -117,13 +117,3 @@ public sealed class PaginationOrchestrator
     }
 }
 
-/// <summary>
-/// Represents a single page response
-/// </summary>
-public sealed class PagedResponse
-{
-    public required byte[] Data { get; init; }
-    public required PaginationMetadata Metadata { get; init; }
-    public Dictionary<string, string>? Headers { get; init; }
-    public int PageNumber { get; init; }
-}
