@@ -132,7 +132,6 @@ public sealed class PluginManager : IPluginManager
         }
     }
 
-    // Legacy methods for compatibility
     public bool TryGetInstance(LibraryMetadata metadata, [NotNullWhen(true)] out IKeryxFluxPlugin? plugin)
     {
         plugin = null;
@@ -148,75 +147,13 @@ public sealed class PluginManager : IPluginManager
                 plugin = newPlugin;
                 return true;
             }
-            else
-            {
-                return false;
-            }
-        }
-        catch (Exception)
-        {
+            
             return false;
         }
-
-    }
-
-
-    public bool TryGetMetadata(LibraryPath libraryPath, [NotNullWhen(true)] out LibraryMetadata? metadata)
-    {
-        if (_store.TryGetValue(libraryPath, out var storedMeta))
+        catch (Exception ex)
         {
-            metadata = storedMeta;
-            return true;
-        }
-        else
-        {
-            metadata = null;
+            _logger.LogError(ex, "Failed to create plugin instance");
             return false;
-        }
-    }
-
-    public bool TryLoad(LibraryPath libraryPath, [NotNullWhen(true)] out LibraryMetadata? metadata)
-    {
-
-        metadata = null;
-        if (_store.TryGetValue(libraryPath, out var storedMeta))
-        {
-            if (!Loader.VersionChanged(libraryPath, storedMeta.Info.LibraryVersion ?? new()))
-            {
-                metadata = storedMeta;
-                return true;
-            }
-
-            if (!_store.TryRemove(libraryPath, out var _))
-            {
-                return false;
-            }
-        }
-
-        var loadResults = Loader.LoadFromPath(libraryPath);
-
-        if (loadResults.IsFailure)
-        {
-
-            return false;
-        }
-
-        var loadedMeta = loadResults.Value!;
-
-        _store.AddOrUpdate(libraryPath, loadedMeta, (k, v) => v = loadedMeta);
-        metadata = loadedMeta;
-        return true;
-    }
-
-    public bool TryUnload(LibraryMetadata info)
-    {
-        if (!_store.TryRemove(info.Info.LibraryPath, out var _))
-        {
-            return false;
-        }
-        else
-        {
-            return true;
         }
     }
 }

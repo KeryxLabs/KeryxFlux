@@ -1,0 +1,44 @@
+# Example 3: Link Header Pagination (GitHub/GitLab style)
+
+name: github-issues-sync
+version: 1.0.0
+type: Poller
+
+plugin_location: plugins/KeryxFlux.Plugins.GitHubPaginated.dll
+
+configuration:
+  org_name: "keryxlabs"
+  repo_name: "keryxflux"
+
+scheduler:
+  cron_expression: "0 */30 * * * *"  # Every 30 minutes
+  server:
+    name: "GitHub API"
+    address: "https://api.github.com/repos/{org_name}/{repo_name}/issues"
+    timeout_seconds: 30
+    authentication:
+      type: "token"
+      token: "${GITHUB_TOKEN}"
+    
+  # Link header pagination (RFC 5988)
+  pagination:
+    strategy: "link-header"
+    page_size: 100
+    max_pages: 10
+    
+    options:
+      # Header name (usually "Link")
+      link_header_name: "Link"
+      
+# No need for special options - Link header contains full URLs
+
+forwarding:
+  destinations:
+    - name: issue-tracker-db
+      type: http
+      url: "https://internal.company.com/api/github/{org_name}/{repo_name}/issues"
+      timeout_seconds: 90
+
+telemetry:
+  enabled: true
+  trace_requests: true

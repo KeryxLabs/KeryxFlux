@@ -1,0 +1,43 @@
+# Example 2: Cursor-Based Pagination (Modern API)
+
+name: slack-messages-sync
+version: 1.0.0
+type: Poller
+
+plugin_location: plugins/KeryxFlux.Plugins.SlackCursor.dll
+
+configuration:
+  channel_id: "C12345ABC"
+  workspace_id: "T12345XYZ"
+
+scheduler:
+  cron_expression: "0 0 * * * *"  # Every hour
+  server:
+    name: "Slack API"
+    address: "https://slack.com/api/conversations.history"
+    timeout_seconds: 30
+    authentication:
+      type: "bearer"
+      token: "${SLACK_BOT_TOKEN}"  # From environment variable
+    
+  # Cursor-based pagination configuration
+  pagination:
+    strategy: "cursor"
+    page_size: 200
+    max_pages: 0  # Unlimited
+    
+    options:
+      # JSON paths for cursor fields
+      paging_object_path: "response_metadata"  # Nested object
+      next_cursor_field_name: "next_cursor"
+      has_more_field_name: "has_more"
+      
+      # Query parameter for cursor
+      cursor_query_param: "cursor"
+
+forwarding:
+  destinations:
+    - name: message-archive
+      type: http
+      url: "https://archive.company.com/slack/{workspace_id}/channels/{channel_id}/messages"
+      timeout_seconds: 60

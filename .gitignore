@@ -216,3 +216,4 @@ dockets/*.yml
 *.temp
 *.swp
 *~
+/docs

@@ -53,63 +53,6 @@ public class DocketManager : IDocketManager
         }
     }
 
-    [Obsolete("Use IPluginManager.LoadPlugin() directly instead")]
-    public bool TryGetPluginInstance(string docketName, [NotNullWhen(true)] out IReqStrAdapter? plugin)
-    {
-        plugin = default;
-        try
-        {
-            var docket = GetDocketByName(docketName);
-            if (docket == null)
-            {
-                return false;
-            }
-
-            // Use new API
-            if (_pluginManager.TryGetLoadedPlugin(docket.PluginLocation, out var keryxPlugin) 
-                && keryxPlugin is IReqStrAdapter adapter)
-            {
-                plugin = adapter;
-                return true;
-            }
-
-            return false;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting plugin instance for docket {DocketName}", docketName);
-            return false;
-        }
-    }
-
-    [Obsolete("Use IPluginManager.LoadPlugin() directly instead")]
-    public bool TryGetPluginType(string docketName, [NotNullWhen(true)] out Type? type)
-    {
-        type = null;
-        try
-        {
-            var docket = GetDocketByName(docketName);
-            if (docket == null)
-            {
-                return false;
-            }
-
-            // Use new API
-            if (_pluginManager.TryGetLoadedPlugin(docket.PluginLocation, out var plugin))
-            {
-                type = plugin.GetType();
-                return true;
-            }
-
-            return false;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting plugin type for docket {DocketName}", docketName);
-            return false;
-        }
-    }
-
     public bool TryLoad(DocketPath docketPath, [NotNullWhen(true)] out Docket? docket)
     {
         docket = null;

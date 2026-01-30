@@ -42,11 +42,5 @@ public interface IDocketManager
     /// Get all poller-type dockets
     /// </summary>
     IEnumerable<Docket> GetPollerDockets();
-
-    // Legacy methods for compatibility during migration
-    [Obsolete("Use TryGetDocket instead")]
-    bool TryGetPluginType(string docketName, [NotNullWhen(true)] out Type? type);
-
-    [Obsolete("Plugin instances are managed by IPluginManager")]
-    bool TryGetPluginInstance(string docketName, [NotNullWhen(true)] out IReqStrAdapter? plugin);
 }
+

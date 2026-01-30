@@ -1,0 +1,46 @@
+# Example 1: Offset/Limit Pagination (Epic FHIR R4)
+
+name: epic-patient-sync-paginated
+version: 1.0.0
+type: Poller
+
+plugin_location: plugins/KeryxFlux.Plugins.EpicPaginated.dll
+
+configuration:
+  business_id: "12345"
+  environment: "production"
+
+scheduler:
+  cron_expression: "0 */15 * * * *"  # Every 15 minutes
+  server:
+    name: "Epic FHIR Server"
+    address: "https://fhir.epic.com/R4/Patient"
+    timeout_seconds: 60
+    
+  # Pagination configuration for offset/limit style
+  pagination:
+    strategy: "offset-limit"
+    page_size: 100
+    max_pages: 50  # Safety limit
+    
+    # Strategy-specific options
+    options:
+      # Field names in JSON response
+      page_field_name: "page"
+      page_size_field_name: "size"
+      total_pages_field_name: "total_pages"
+      total_count_field_name: "total"
+      
+      # Query parameter names
+      page_query_param: "page"
+      page_size_query_param: "_count"  # Epic uses _count
+      
+      # Page numbering (false = 1-based, true = 0-based)
+      zero_based_pages: "false"
+
+forwarding:
+  destinations:
+    - name: internal-db
+      type: http
+      url: "https://internal.hospital.com/api/{business_id}/patients/bulk"
+      timeout_seconds: 120

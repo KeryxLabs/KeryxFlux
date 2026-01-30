@@ -1,0 +1,44 @@
+# Advanced Docket Example with Configuration Variables
+
+name: epic-patient-sync-advanced
+version: 1.0.0
+type: Poller
+
+plugin_location: plugins/KeryxFlux.Plugins.EpicFHIR.dll
+
+# Configuration section for path templating and dynamic behavior
+configuration:
+  business_id: "12345"
+  environment: "production"
+  api_version: "v1"
+  facility_code: "MAIN"
+  last_sync_date: "2026-01-29"
+
+# Scheduler with templated server URL
+scheduler:
+  cron_expression: "0 */15 * * * *"  # Every 15 minutes
+  server:
+    name: "Epic FHIR Server"
+    # Path template using {variable} syntax
+    address: "https://fhir.epic.com/{api_version}/{environment}/Patient"
+    
+# Forwarding with templated destination URLs
+forwarding:
+  destinations:
+    # Destination 1: Internal API with multiple variables
+    - name: internal-api
+      type: http
+      # Variables resolved at runtime: {business_id}, {facility_code}
+      url: "https://internal.hospital.com/api/{business_id}/facilities/{facility_code}/patients"
+      timeout_seconds: 30
+
+    # Destination 2: Analytics endpoint with date variable
+    - name: analytics-export
+      type: http
+      # Date-based path for daily exports
+      url: "https://analytics.hospital.com/exports/{environment}/patients/{last_sync_date}"
+      timeout_seconds: 60
+
+telemetry:
+  enabled: true
+  trace_requests: true

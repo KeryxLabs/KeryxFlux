@@ -21,43 +21,29 @@ namespace KeryxFlux.Application.FileSystem
         {
             try
             {
-                // Log the exact path being loaded
-                var fullPath = Path.GetFullPath(path);
-
                 LibraryLoadContext loadContext = new(path);
                 AssemblyName assemblyName = new(Path.GetFileNameWithoutExtension(path));
 
                 if (assemblyName.Name is null)
-                {
                     return LoadingError.EmptyAssemblyName;
-                }
-
 
                 Assembly assembly = loadContext.LoadFromAssemblyName(assemblyName);
 
-
-                // Look for new plugin interface first, then fall back to legacy
+                // Find plugin type implementing IKeryxFluxPlugin
                 var libType = assembly.GetTypes()
                     .Where(t => typeof(IKeryxFluxPlugin).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
                     .FirstOrDefault();
-                
-                 
+
                 var versionStr = assembly.FullName?.Split(',').ElementAtOrDefault(1)?.Split('=').ElementAtOrDefault(1) ?? string.Empty;
 
                 if (string.IsNullOrEmpty(versionStr))
-                {
                     return LoadingError.EmptyVersion;
-                }
-                
+
                 if (!Version.TryParse(versionStr, out var version))
-                {
                     return LoadingError.VersionNotParsable;
-                }
-                
+
                 if (libType == null)
-                {
                     return LoadingError.NullPlugin;
-                }
 
                 var info = new LibraryInfo()
                 {
@@ -65,7 +51,7 @@ namespace KeryxFlux.Application.FileSystem
                     LibraryName = new(assemblyName.Name),
                     LibraryVersion = version,
                 };
-                
+
                 return new LibraryMetadata
                 {
                     Info = info,

@@ -46,12 +46,6 @@ public sealed class Docket
     public PollerConfiguration? Scheduler { get; init; }
 
     /// <summary>
-    /// Server information for pollers (legacy support, prefer Scheduler.Server)
-    /// </summary>
-    [YamlMember(Alias = "server_information")]
-    public ServerInformation? ServerInformation { get; init; }
-
-    /// <summary>
     /// Forwarding configuration (where to send transformed data)
     /// </summary>
     [YamlMember(Alias = "forwarding")]
@@ -62,6 +56,14 @@ public sealed class Docket
     /// </summary>
     [YamlMember(Alias = "telemetry")]
     public TelemetryConfiguration? Telemetry { get; init; }
+
+    /// <summary>
+    /// Configuration values for templating and dynamic behavior.
+    /// Example: business_id, environment, api_version, etc.
+    /// Used for path templating like: /api/{environment}/patients/{business_id}
+    /// </summary>
+    [YamlMember(Alias = "configuration")]
+    public Dictionary<string, string>? Configuration { get; init; }
 
     /// <summary>
     /// Validate that the docket configuration is internally consistent
@@ -84,6 +86,7 @@ public sealed class Docket
         {
             validationError = "At least one forwarding destination is required";
             return false;
+
         }
 
         validationError = null;

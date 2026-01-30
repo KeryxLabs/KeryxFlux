@@ -37,6 +37,13 @@ public sealed class TransformationContext
     public string? SourceEndpoint { get; init; }
 
     /// <summary>
+    /// Docket configuration values for dynamic processing.
+    /// Plugins can use these for path templating, conditional logic, etc.
+    /// Example: {"BusinessId": "12345", "Environment": "Production"}
+    /// </summary>
+    public IReadOnlyDictionary<string, string> DocketConfiguration { get; init; } = new Dictionary<string, string>();
+
+    /// <summary>
     /// Create a new transformation context
     /// </summary>
     public TransformationContext()
@@ -50,7 +57,8 @@ public sealed class TransformationContext
         string docketName,
         string receiverType,
         string correlationId,
-        IReadOnlyDictionary<string, string>? metadata = null)
+        IReadOnlyDictionary<string, string>? metadata = null,
+        IReadOnlyDictionary<string, string>? docketConfiguration = null)
     {
         return new TransformationContext
         {
@@ -58,7 +66,9 @@ public sealed class TransformationContext
             ReceiverType = receiverType,
             ReceivedAt = DateTimeOffset.UtcNow,
             CorrelationId = correlationId,
-            Metadata = metadata ?? new Dictionary<string, string>()
+            Metadata = metadata ?? new Dictionary<string, string>(),
+            DocketConfiguration = docketConfiguration ?? new Dictionary<string, string>()
         };
     }
 }
+

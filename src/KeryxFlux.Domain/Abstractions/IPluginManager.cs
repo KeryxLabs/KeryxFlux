@@ -26,16 +26,9 @@ public interface IPluginManager
     /// </summary>
     void UnloadPlugin(string pluginPath);
 
-    // Legacy methods for compatibility during migration
-    [Obsolete("Use LoadPlugin instead")]
+    /// <summary>
+    /// Internal method for creating plugin instances from metadata
+    /// </summary>
     bool TryGetInstance(LibraryMetadata metadata, [NotNullWhen(true)] out IKeryxFluxPlugin? plugin);
-
-    [Obsolete("Use LoadPlugin instead")]
-    bool TryGetMetadata(LibraryPath libraryPath, [NotNullWhen(true)] out LibraryMetadata? metadata);
-
-    [Obsolete("Use LoadPlugin instead")]
-    bool TryLoad(LibraryPath libraryPath, [NotNullWhen(true)] out LibraryMetadata? metadata);
-
-    [Obsolete("Use UnloadPlugin instead")]
-    bool TryUnload(LibraryMetadata metadata);
 }
+

@@ -24,6 +24,12 @@ public sealed class PollerConfiguration
     /// </summary>
     [YamlMember(Alias = "server")]
     public required PollerServerConfiguration Server { get; init; }
+
+    /// <summary>
+    /// Pagination configuration (optional - for paginated APIs)
+    /// </summary>
+    [YamlMember(Alias = "pagination")]
+    public PaginationConfiguration? Pagination { get; init; }
 }
 
 /// <summary>
@@ -46,4 +52,35 @@ public sealed class PollerServerConfiguration
     [YamlMember(Alias = "timeout_seconds")]
     public int TimeoutSeconds { get; init; } = 30;
 }
+
+/// <summary>
+/// Pagination configuration for pollers
+/// </summary>
+public sealed class PaginationConfiguration
+{
+    /// <summary>
+    /// Pagination strategy type: "offset-limit", "cursor", "link-header"
+    /// </summary>
+    [YamlMember(Alias = "strategy")]
+    public required string Strategy { get; init; }
+
+    /// <summary>
+    /// Initial page size
+    /// </summary>
+    [YamlMember(Alias = "page_size")]
+    public int PageSize { get; init; } = 100;
+
+    /// <summary>
+    /// Maximum number of pages to fetch (safety limit, 0 = unlimited)
+    /// </summary>
+    [YamlMember(Alias = "max_pages")]
+    public int MaxPages { get; init; } = 0;
+
+    /// <summary>
+    /// Strategy-specific options (JSON object as dictionary)
+    /// </summary>
+    [YamlMember(Alias = "options")]
+    public Dictionary<string, string>? Options { get; init; }
+}
+
 

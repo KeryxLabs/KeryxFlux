@@ -3,6 +3,7 @@ using KeryxFlux.Contracts;
 using KeryxFlux.Domain.Abstractions;
 using KeryxFlux.Domain.Models;
 using KeryxFlux.Domain.Ports;
+using KeryxFlux.Domain.Utilities;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using DomainSender = KeryxFlux.Domain.Ports.ISender;
@@ -64,12 +65,13 @@ public sealed class ProcessMessageCommandHandler : IRequestHandler<ProcessMessag
                     $"Plugin must implement IReceiverPlugin for receiver-type dockets");
             }
 
-            // 4. Create transformation context
+            // 4. Create transformation context with docket configuration
             var context = TransformationContext.Create(
                 docketName: request.DocketName,
                 receiverType: docket.Type.ToString().ToLowerInvariant(),
                 correlationId: request.Message.CorrelationId,
-                metadata: request.Message.Metadata
+                metadata: request.Message.Metadata,
+                docketConfiguration: docket.Configuration
             );
 
             // 5. Execute transformation
@@ -106,9 +108,22 @@ public sealed class ProcessMessageCommandHandler : IRequestHandler<ProcessMessag
                     continue;
                 }
 
+                // Resolve path template variables in destination URL
+                var destinationUrl = destination.Url ?? destination.Name;
+                if (docket.Configuration != null && PathTemplateResolver.HasUnresolvedVariables(destinationUrl))
+                {
+                    destinationUrl = PathTemplateResolver.Resolve(destinationUrl, docket.Configuration);
+                    
+                    _logger.LogDebug(
+                        "Resolved destination URL template: {Original} -> {Resolved}",
+                        destination.Url,
+                        destinationUrl
+                    );
+                }
+
                 var outboundMessage = new OutboundMessage
                 {
-                    DestinationName = destination.Url ?? destination.Name, // Use URL if available, fallback to Name
+                    DestinationName = destinationUrl,
                     Payload = transformResult.Data!,
                     ContentType = transformResult.ContentType ?? "application/octet-stream",
                     CorrelationId = request.Message.CorrelationId,

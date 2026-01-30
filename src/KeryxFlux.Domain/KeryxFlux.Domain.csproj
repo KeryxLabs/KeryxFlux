@@ -21,4 +21,10 @@
     <ProjectReference Include="..\KeryxFlux.Contracts\KeryxFlux.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+    <Folder Include="Models\Http\" />
+    <Folder Include="Models\Sftp\" />
+  </ItemGroup>
+
 </Project>

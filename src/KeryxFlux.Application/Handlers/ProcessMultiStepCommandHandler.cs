@@ -296,7 +296,7 @@ public sealed class ProcessMultiStepCommandHandler : IRequestHandler<ProcessMult
         CancellationToken cancellationToken)
     {
         var httpClient = _httpClientFactory.CreateClient();
-        var baseUrl = docket.Scheduler?.Server?.Address ?? docket.ServerInformation?.Address;
+        var baseUrl = docket.Scheduler?.Server?.Address;
 
         // Build full URL
         var fullUrl = step.RequestUrl.StartsWith("http")
