@@ -1,12 +1,17 @@
-﻿# KeryxFlux
+# KeryxFlux
 
-**Cloud-native bi-directional interoperability engine for healthcare and enterprise integration**
+**Cloud-native declarative data orchestration framework for .NET**
 
 ---
 
 ## What is KeryxFlux?
 
-KeryxFlux is a modern, horizontally scalable interoperability engine that enables seamless data flow between disparate systems. Built with DevOps-first principles, it combines the power of declarative YAML configuration with a robust plugin architecture.
+KeryxFlux is a modern, horizontally scalable data orchestration framework that enables seamless data flow between disparate systems. Built with DevOps-first principles, it combines the power of declarative YAML configuration with a robust plugin architecture.
+
+**Think of it as:**
+- Zapier/Make - but self-hosted and code-extensible
+- Apache Camel - but cloud-native and YAML-configured  
+- AWS EventBridge - but open source and multi-protocol
 
 **Etymology**: 
 - **Keryx** (Greek) - Herald, messenger
@@ -43,6 +48,29 @@ KeryxFlux is a modern, horizontally scalable interoperability engine that enable
 - Health checks and metrics
 
 ---
+
+
+## What KeryxFlux Is (And Isn't)
+
+### ✅ KeryxFlux IS:
+- **Generic infrastructure framework** for data orchestration
+- **YAML-based configuration** system for integration workflows
+- **Multi-protocol adapter** (HTTP, TCP, RabbitMQ, Kafka, etc.)
+- **Plugin architecture** for custom transformations
+- **Comparable to:** Apache Camel, Zapier, AWS EventBridge, Airflow
+
+### ❌ KeryxFlux IS NOT:
+- NOT an industry-specific solution
+- NOT a pre-built integration platform
+- NOT a turnkey application
+- NOT opinionated about your domain
+
+**Think of it like:**
+- Express.js → web framework (not a website)
+- Entity Framework → ORM library (not a database)
+- **KeryxFlux → orchestration framework** (not the orchestrations)
+
+**You build applications ON TOP of KeryxFlux.**
 
 ## Architecture
 
@@ -181,36 +209,37 @@ forwarding:
 ### Docket Example (Scheduled Poller)
 
 ```yaml
-# dockets/patient-sync.yaml
-name: patient-sync-poller
+# dockets/weather-sync.yaml
+name: weather-sync-poller
 version: 1.0.0
 type: poller
-plugin_location: ./plugins/FhirParser.dll
+plugin_location: ./plugins/WeatherParser.dll
 
 scheduler:
   cron_expression: "*/15 * * * *"
   queue: default
-  server:
-    name: epic-fhir
-    address: https://fhir.epic.com/Patient
-    authentication:
-      type: oauth2
-      token_url: https://oauth.epic.com/token
+    server:
+      name: weather-api
+      address: https://api.weather.com/current
+      authentication:
+        type: api_key
+        header: X-API-Key
+        secret_env: WEATHER_API_KEY
       client_id_env: EPIC_CLIENT_ID
       client_secret_env: EPIC_SECRET
 
 forwarding:
   destinations:
-    - type: rabbitmq
-      connection_env: RABBITMQ_CONNECTION
-      exchange: patient-updates
+      - type: rabbitmq
+        connection_env: RABBITMQ_CONNECTION
+        exchange: weather-updates
 ```
 
 ### Docket Example (Date Variables - Lookback Window)
 
 ```yaml
-# dockets/patient-updates-lookback.yaml
-name: patient-updates-lookback
+# dockets/weather-updates-lookback.yaml
+name: weather-updates-lookback
 version: 1.0.0
 type: poller
 plugin_location: ./plugins/FhirParser.dll
@@ -227,8 +256,8 @@ scheduler:
   queue: default
   server:
     name: epic-fhir
-    # Dynamic URL with date variable
-    address: "https://fhir.epic.com/Patient?_lastUpdated=gt{lookback_date}"
+      # Dynamic URL with date variable
+      address: "https://api.weather.com/history?since={lookback_date}"
     authentication:
       type: oauth2
       token_url: https://oauth.epic.com/token
@@ -237,14 +266,14 @@ scheduler:
 
 forwarding:
   destinations:
-    - type: http
-      url: https://warehouse.internal.com/api/patients
-      method: POST
+      - type: http
+        url: https://datawarehouse.com/api/weather
+        method: POST
 ```
 
 **Resolved URL Example** (at 2025-01-15 15:30 UTC):
 ```
-https://fhir.epic.com/Patient?_lastUpdated=gt2025-01-15T14:30:00Z
+https://api.weather.com/history?since=2025-01-15T14:30:00Z
 ```
 
 ---
