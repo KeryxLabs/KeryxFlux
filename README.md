@@ -34,6 +34,11 @@ KeryxFlux is a modern, horizontally scalable interoperability engine that enable
 - Hot-loadable transformation plugins (.NET assemblies)
 - Integrate with [KeryxPars](https://github.com/theelevators/KeryxPars) for message parsing
 
+? **Dynamic Date Templating**
+- Time-based URL generation with lookback windows
+- Backfill scenarios with configurable time ranges
+- Multi-tenant polling with different time offsets
+
 ? **Production-Ready**
 - Hangfire-powered job scheduling
 - OpenTelemetry observability
@@ -103,6 +108,47 @@ The Main instance runs at `http://localhost:8080` with Hangfire dashboard at `/h
 
 ---
 
+## KeryxFlux CLI
+
+Manage and validate your docket files with the KeryxFlux command-line tool.
+
+### Installation
+
+```bash
+# Install globally
+dotnet tool install -g KeryxFlux.Cli
+
+# Verify installation
+keryxflux --version
+```  
+
+### Quick Start
+
+```bash
+# Validate docket files
+keryxflux validate ./dockets
+
+# Preview variable resolution
+keryxflux preview patient-sync.yaml
+
+# Create new docket from template
+keryxflux create poller -n "my-poller" -o ./dockets
+
+# Debug configuration
+keryxflux debug patient-sync.yaml
+```  
+
+### Features
+
+- ? **validate** - Validate docket files for errors
+- ? **preview** - Preview resolved URLs and variables
+- ? **create** - Generate dockets from templates
+- ? **debug** - Deep debugging and troubleshooting
+
+**Full documentation**: [CLI README](./src/KeryxFlux.Cli/README.md)
+
+---
+
 ## Configuration
 
 ### Docket Example (HTTP Receiver)
@@ -145,21 +191,61 @@ plugin_location: ./plugins/FhirParser.dll
 scheduler:
   cron_expression: "*/15 * * * *"
   queue: default
-
-server_information:
-  name: epic-fhir
-  address: https://fhir.epic.com
-  authentication:
-    type: oauth2
-    token_url: https://oauth.epic.com/token
-    client_id_env: EPIC_CLIENT_ID
-    client_secret_env: EPIC_SECRET
+  server:
+    name: epic-fhir
+    address: https://fhir.epic.com/Patient
+    authentication:
+      type: oauth2
+      token_url: https://oauth.epic.com/token
+      client_id_env: EPIC_CLIENT_ID
+      client_secret_env: EPIC_SECRET
 
 forwarding:
   destinations:
     - type: rabbitmq
       connection_env: RABBITMQ_CONNECTION
       exchange: patient-updates
+```
+
+### Docket Example (Date Variables - Lookback Window)
+
+```yaml
+# dockets/patient-updates-lookback.yaml
+name: patient-updates-lookback
+version: 1.0.0
+type: poller
+plugin_location: ./plugins/FhirParser.dll
+
+# Date variable for 1-hour lookback window
+date_variables:
+  - name: lookback_date
+    offset_expression: "-1h"
+    format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    timezone: "UTC"
+
+scheduler:
+  cron_expression: "*/30 * * * *"  # Poll every 30 minutes
+  queue: default
+  server:
+    name: epic-fhir
+    # Dynamic URL with date variable
+    address: "https://fhir.epic.com/Patient?_lastUpdated=gt{lookback_date}"
+    authentication:
+      type: oauth2
+      token_url: https://oauth.epic.com/token
+      client_id_env: EPIC_CLIENT_ID
+      client_secret_env: EPIC_SECRET
+
+forwarding:
+  destinations:
+    - type: http
+      url: https://warehouse.internal.com/api/patients
+      method: POST
+```
+
+**Resolved URL Example** (at 2025-01-15 15:30 UTC):
+```
+https://fhir.epic.com/Patient?_lastUpdated=gt2025-01-15T14:30:00Z
 ```
 
 ---
@@ -294,3 +380,4 @@ Part of the **KeryxHealth** ecosystem, building modern tools for healthcare inte
 ---
 
 **Built with ?? for the healthcare integration community**
+

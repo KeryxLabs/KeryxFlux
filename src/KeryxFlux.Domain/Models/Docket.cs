@@ -65,6 +65,14 @@ public sealed class Docket
     [YamlMember(Alias = "configuration")]
     public Dictionary<string, string>? Configuration { get; init; }
 
+    /// <summary>
+    /// Date/time variables for dynamic URL generation with time offsets.
+    /// Example: lookback windows, backfill scenarios
+    /// Used for path templating like: /api/patients?updated_after={lookback_date}
+    /// </summary>
+    [YamlMember(Alias = "date_variables")]
+    public List<DateVariableConfiguration>? DateVariables { get; init; }
+
     // ===== Multi-Tenant Polling Configuration =====
 
     /// <summary>

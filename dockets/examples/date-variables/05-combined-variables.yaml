@@ -1,0 +1,79 @@
+# Combined Static and Date Variables
+#
+# Scenario: API requires both environment identifiers and date ranges.
+# Demonstrates how static configuration variables and dynamic date variables work together.
+#
+# URL Template:
+# https://api.ehr.com/{environment}/{api_version}/changes?tenant={tenant_code}&since={since_date}
+#
+# Resolved Example:
+# https://api.ehr.com/production/v2/changes?tenant=HOSP001&since=2025-01-15T12:00:00Z
+
+name: combined-variables-example
+version: 1.0.0
+type: poller
+plugin_location: ./plugins/GenericJsonParser.dll
+
+# Static configuration variables
+configuration:
+  environment: production
+  api_version: v2
+  tenant_code: HOSP001
+  region: us-east-1
+
+# Dynamic date variables
+date_variables:
+  - name: since_date
+    offset_expression: "-2h"
+    format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    timezone: "UTC"
+    description: "2-hour lookback window"
+    
+  - name: until_date
+    offset_expression: "0"
+    format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    timezone: "UTC"
+    description: "Current time"
+
+scheduler:
+  cron_expression: "0 * * * *"  # Every hour
+  queue: default
+  server:
+    name: ehr-change-feed
+    # URL uses BOTH static variables {environment}, {api_version}, {tenant_code}
+    # AND date variables {since_date}, {until_date}
+    address: "https://api.ehr.com/{environment}/{api_version}/changes?tenant={tenant_code}&region={region}&since={since_date}&until={until_date}"
+    type: http
+    authentication:
+      type: oauth2
+      token_url: "https://api.ehr.com/oauth/token"
+      client_id_env: EHR_CLIENT_ID
+      client_secret_env: EHR_CLIENT_SECRET
+    timeout_seconds: 60
+
+pagination:
+  strategy: "cursor"
+  page_size: 200
+  max_pages: 50
+
+forwarding:
+  destinations:
+    - name: change-stream-processor
+      type: http
+      url: "https://internal.com/api/changes/{region}"
+      method: POST
+      headers:
+        X-Environment: "{environment}"
+        X-Tenant: "{tenant_code}"
+      retry_policy:
+        max_attempts: 3
+        backoff: exponential
+
+telemetry:
+  enabled: true
+  trace_headers: true
+
+# Resolution order:
+# 1. Date variables are resolved first: {since_date}, {until_date}
+# 2. Static variables are resolved second: {environment}, {api_version}, {tenant_code}, {region}
+# 3. Final URL is fully resolved

@@ -1,0 +1,135 @@
+# Multi-Tenant Sync with Different Lookback Windows
+#
+# Scenario: Managing multiple hospital facilities with different EMR systems.
+# Each facility has different data delay characteristics:
+# - Main Hospital: Modern system, 1-hour delay max
+# - Rural Clinic: Legacy system, 4-hour delays common
+# - Urgent Care: Real-time system, 30-minute lookback sufficient
+#
+# This demonstrates tenant-level date variable overrides.
+
+name: multi-facility-patient-sync
+version: 1.0.0
+type: poller
+plugin_location: ./plugins/FhirParser.dll
+
+# Default date variable for all tenants (can be overridden)
+date_variables:
+  - name: lookback_date
+    offset_expression: "-1h"
+    format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    timezone: "UTC"
+    description: "Default 1-hour lookback"
+
+scheduler:
+  cron_expression: "*/30 * * * *"  # Default: every 30 minutes
+  queue: multi-tenant-sync
+
+# Multi-tenant configuration
+multi_tenant:
+  max_parallel_jobs: 5
+  fail_fast: false
+  job_start_delay_ms: 1000  # 1 second delay between starting each tenant
+
+# Tenants with facility-specific overrides
+tenants:
+  - tenant_id: MAIN_HOSPITAL
+    display_name: "Main Hospital - Downtown Campus"
+    enabled: true
+    configuration:
+      facility_code: "MH001"
+      region: "central"
+    # Uses default 1-hour lookback
+    
+  - tenant_id: RURAL_CLINIC
+    display_name: "Rural Community Clinic"
+    enabled: true
+    configuration:
+      facility_code: "RC002"
+      region: "northwest"
+    # Override: 4-hour lookback due to legacy EMR delays
+    date_variables:
+      - name: lookback_date
+        offset_expression: "-4h"
+        format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        description: "Extended lookback for legacy system delays"
+    
+  - tenant_id: URGENT_CARE_EAST
+    display_name: "Urgent Care - East Location"
+    enabled: true
+    configuration:
+      facility_code: "UC003"
+      region: "east"
+    # Override: More frequent polling with shorter lookback
+    cron_expression: "*/15 * * * *"  # Every 15 minutes
+    date_variables:
+      - name: lookback_date
+        offset_expression: "-30m"
+        format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        description: "Short lookback for real-time urgent care data"
+    
+  - tenant_id: URGENT_CARE_WEST
+    display_name: "Urgent Care - West Location"
+    enabled: true
+    configuration:
+      facility_code: "UC004"
+      region: "west"
+    cron_expression: "*/15 * * * *"
+    date_variables:
+      - name: lookback_date
+        offset_expression: "-30m"
+        format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
+
+# Endpoints to poll for each tenant
+endpoints:
+  - endpoint_id: Patient
+    display_name: "Patient Resource"
+    enabled: true
+    pagination:
+      strategy: "link-header"
+      page_size: 100
+    configuration:
+      resource_type: "Patient"
+      # URL template uses both tenant config and date variable
+      base_url: "https://fhir.epic.com/{tenant_id}/api/FHIR/R4/Patient?_lastUpdated=gt{lookback_date}"
+  
+  - endpoint_id: Encounter
+    display_name: "Encounter Resource"
+    enabled: true
+    pagination:
+      strategy: "link-header"
+      page_size: 50
+    configuration:
+      resource_type: "Encounter"
+      base_url: "https://fhir.epic.com/{tenant_id}/api/FHIR/R4/Encounter?date=gt{lookback_date}"
+
+# Base configuration shared across all tenant/endpoint combinations
+base_configuration:
+  api_version: "R4"
+  environment: "production"
+  
+forwarding:
+  destinations:
+    - name: centralized-data-lake
+      type: http
+      url: "https://datalake.internal.com/api/fhir/{tenant_id}/{resource_type}"
+      method: POST
+      headers:
+        X-Source-System: "KeryxFlux-MultiTenant"
+      retry_policy:
+        max_attempts: 3
+        backoff: exponential
+
+telemetry:
+  enabled: true
+  trace_headers: true
+
+# Resulting jobs (tenant × endpoint matrix):
+# 1. MAIN_HOSPITAL :: Patient      (every 30 min, -1h lookback)
+# 2. MAIN_HOSPITAL :: Encounter    (every 30 min, -1h lookback)
+# 3. RURAL_CLINIC :: Patient       (every 30 min, -4h lookback)
+# 4. RURAL_CLINIC :: Encounter     (every 30 min, -4h lookback)
+# 5. URGENT_CARE_EAST :: Patient   (every 15 min, -30m lookback)
+# 6. URGENT_CARE_EAST :: Encounter (every 15 min, -30m lookback)
+# 7. URGENT_CARE_WEST :: Patient   (every 15 min, -30m lookback)
+# 8. URGENT_CARE_WEST :: Encounter (every 15 min, -30m lookback)

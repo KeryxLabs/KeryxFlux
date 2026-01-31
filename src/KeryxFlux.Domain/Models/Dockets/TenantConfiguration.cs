@@ -28,6 +28,12 @@ public sealed class TenantConfiguration
     public Dictionary<string, string>? Configuration { get; init; }
 
     /// <summary>
+    /// Tenant-specific date variables (overrides docket-level date variables)
+    /// </summary>
+    [YamlMember(Alias = "date_variables")]
+    public List<DateVariableConfiguration>? DateVariables { get; init; }
+
+    /// <summary>
     /// Override the global cron schedule for this specific tenant
     /// </summary>
     [YamlMember(Alias = "cron_expression")]

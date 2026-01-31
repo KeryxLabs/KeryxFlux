@@ -1,9 +1,13 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/KeryxFlux.Application/KeryxFlux.Application.csproj" />
+    <Project Path="src/KeryxFlux.Cli/KeryxFlux.Cli.csproj" />
     <Project Path="src/KeryxFlux.Contracts/KeryxFlux.Contracts.csproj" />
     <Project Path="src/KeryxFlux.Domain/KeryxFlux.Domain.csproj" />
     <Project Path="src/KeryxFlux.Host/KeryxFlux.Host.csproj" />
     <Project Path="src/KeryxFlux.Infrastructure/KeryxFlux.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Tests/">
+    <Project Path="tests/KeryxFlux.Domain.Tests/KeryxFlux.Domain.Tests.csproj" />
   </Folder>
 </Solution>

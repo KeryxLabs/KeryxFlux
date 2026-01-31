@@ -29,6 +29,12 @@ public sealed class EndpointConfiguration
     public Dictionary<string, string>? Configuration { get; init; }
 
     /// <summary>
+    /// Endpoint-specific date variables (overrides docket-level date variables)
+    /// </summary>
+    [YamlMember(Alias = "date_variables")]
+    public List<DateVariableConfiguration>? DateVariables { get; init; }
+
+    /// <summary>
     /// Pagination configuration specific to this endpoint
     /// </summary>
     [YamlMember(Alias = "pagination")]

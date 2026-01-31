@@ -1,3 +1,5 @@
+using KeryxFlux.Domain.Models.Dockets;
+
 namespace KeryxFlux.Domain.Utilities;
 
 /// <summary>
@@ -27,6 +29,34 @@ public static class PathTemplateResolver
             // Support both {key} and {Key} (case-insensitive)
             result = result.Replace($"{{{key}}}", value, StringComparison.OrdinalIgnoreCase);
         }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Resolve template with both static variables and dynamic date variables
+    /// </summary>
+    /// <param name="template">Path template with {variable} placeholders</param>
+    /// <param name="variables">Dictionary of static variable names and values</param>
+    /// <param name="dateVariables">List of date variable configurations</param>
+    /// <param name="baseTime">Base time for date calculations (default: UtcNow)</param>
+    /// <returns>Fully resolved path with all variables substituted</returns>
+    public static string ResolveWithDates(
+        string template, 
+        IReadOnlyDictionary<string, string>? variables,
+        IReadOnlyList<DateVariableConfiguration>? dateVariables,
+        DateTimeOffset? baseTime = null)
+    {
+        if (string.IsNullOrWhiteSpace(template))
+        {
+            return template;
+        }
+
+        // Step 1: Resolve date variables first
+        var result = DateTemplateResolver.Resolve(template, dateVariables, baseTime);
+
+        // Step 2: Resolve static variables
+        result = Resolve(result, variables);
 
         return result;
     }

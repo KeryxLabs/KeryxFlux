@@ -1,0 +1,59 @@
+# Daily Lab Results with Unix Timestamp
+#
+# Scenario: Legacy lab system API requires Unix timestamps for date filtering.
+# Retrieve all lab results from the previous day.
+#
+# Example:
+# - Current time: 2025-01-16 02:00:00 UTC
+# - Yesterday start: 2025-01-15 00:00:00 UTC (timestamp: 1736899200)
+# - Yesterday end: 2025-01-15 23:59:59 UTC (timestamp: 1736985599)
+
+name: daily-lab-results-unix
+version: 1.0.0
+type: poller
+plugin_location: ./plugins/LabResultsParser.dll
+
+# Date variables using Unix timestamp format
+date_variables:
+  - name: yesterday_start
+    offset_expression: "-1d"
+    format: "unix"  # Unix timestamp in seconds
+    timezone: "UTC"
+    description: "Start of yesterday (Unix timestamp)"
+    
+  - name: yesterday_end
+    offset_expression: "0"
+    format: "unix"
+    timezone: "UTC"
+    description: "End of time range (Unix timestamp)"
+
+scheduler:
+  cron_expression: "0 2 * * *"  # Daily at 2 AM
+  queue: daily-sync
+  server:
+    name: legacy-lab-system
+    address: "https://labs.legacy.com/api/results?from_timestamp={yesterday_start}&to_timestamp={yesterday_end}"
+    type: http
+    authentication:
+      type: api_key
+      header: X-API-Key
+      secret_env: LAB_API_KEY
+    timeout_seconds: 90
+
+pagination:
+  strategy: "offset-limit"
+  page_size: 1000
+  max_pages: 100
+
+forwarding:
+  destinations:
+    - name: lab-data-warehouse
+      type: http
+      url: "https://warehouse.internal.com/api/labs"
+      method: POST
+      retry_policy:
+        max_attempts: 3
+        backoff: exponential
+
+telemetry:
+  enabled: true
