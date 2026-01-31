@@ -1,6 +1,4 @@
-# KeryxFlux
-
-> **Part of the [KeryxHealth](https://github.com/theelevators) ecosystem**
+﻿# KeryxFlux
 
 **Cloud-native bi-directional interoperability engine for healthcare and enterprise integration**
 
@@ -11,35 +9,35 @@
 KeryxFlux is a modern, horizontally scalable interoperability engine that enables seamless data flow between disparate systems. Built with DevOps-first principles, it combines the power of declarative YAML configuration with a robust plugin architecture.
 
 **Etymology**: 
-- **Keryx** (Greek: ?????) - Herald, messenger
+- **Keryx** (Greek) - Herald, messenger
 - **Flux** (Latin) - Flow, continuous change
 
 ### Key Features
 
-? **Bi-Directional Communication**
+✨ **Bi-Directional Communication**
 - Receive data via HTTP, TCP (MLLP), RabbitMQ, Kafka
 - Send data to HTTP endpoints, message queues, event streams
 
-? **DevOps-First**
+✨ **DevOps-First**
 - YAML-based declarative configuration ("dockets")
 - Hot-reload configuration without restarts
 - Version control friendly
 
-? **Cloud-Native**
+✨ **Cloud-Native**
 - Single Docker image, multiple deployment modes (Main/Node)
 - Horizontal scaling with Kubernetes
 - Redis-based distributed state management
 
-? **Plugin System**
+✨ **Plugin System**
 - Hot-loadable transformation plugins (.NET assemblies)
-- Integrate with [KeryxPars](https://github.com/theelevators/KeryxPars) for message parsing
+- Integrate with [KeryxPars](https://github.com/keryxlabs/KeryxPars) for message parsing
 
-? **Dynamic Date Templating**
+✨ **Dynamic Date Templating**
 - Time-based URL generation with lookback windows
 - Backfill scenarios with configurable time ranges
 - Multi-tenant polling with different time offsets
 
-? **Production-Ready**
+✨ **Production-Ready**
 - Hangfire-powered job scheduling
 - OpenTelemetry observability
 - Health checks and metrics
@@ -52,11 +50,12 @@ KeryxFlux follows Domain-Driven Design (DDD) with Hexagonal Architecture:
 
 ```
 src/
-??? KeryxFlux.Domain          # Pure domain logic, models, ports
-??? KeryxFlux.Application     # Use cases, orchestration
-??? KeryxFlux.Infrastructure  # Adapters (HTTP, RabbitMQ, Kafka, TCP)
-??? KeryxFlux.Contracts       # Plugin developer contracts
-??? KeryxFlux.Host            # Unified service host
+ KeryxFlux.Domain          # Pure domain logic, models, ports
+ KeryxFlux.Application     # Use cases, orchestration
+ KeryxFlux.Infrastructure  # Adapters (HTTP, RabbitMQ, Kafka, TCP)
+ KeryxFlux.Contracts       # Plugin developer contracts
+ KeryxFlux.Host            # Unified service host
+ KeryxFlux.CLI             # Validate, Create, Debug YAML files (Dockets)
 ```
 
 ### Deployment Modes
@@ -80,7 +79,7 @@ Scale horizontally by adding more nodes while keeping a single Main instance.
 
 ```bash
 # Clone repository
-git clone https://github.com/theelevators/KeryxFlux.git
+git clone https://github.com/keryxlabs/KeryxFlux.git
 cd KeryxFlux
 
 # Start dependencies
@@ -140,10 +139,10 @@ keryxflux debug patient-sync.yaml
 
 ### Features
 
-- ? **validate** - Validate docket files for errors
-- ? **preview** - Preview resolved URLs and variables
-- ? **create** - Generate dockets from templates
-- ? **debug** - Deep debugging and troubleshooting
+- ✔ **validate** - Validate docket files for errors
+- ✔ **preview** - Preview resolved URLs and variables
+- ✔ **create** - Generate dockets from templates
+- ✔ **debug** - Deep debugging and troubleshooting
 
 **Full documentation**: [CLI README](./src/KeryxFlux.Cli/README.md)
 
@@ -282,7 +281,7 @@ Compile to `.dll` and place in the `plugins/` directory.
 
 ## Related Projects
 
-- **[KeryxPars](https://github.com/theelevators/KeryxPars)**: Interface message parsing library (HL7, FHIR, X12)
+- **[KeryxPars](https://github.com/keryxlabs/KeryxPars)**: Interface message parsing library (HL7, FHIR, X12)
 - Use KeryxPars inside KeryxFlux plugins for robust message parsing
 
 ---
@@ -290,49 +289,8 @@ Compile to `.dll` and place in the `plugins/` directory.
 ## Documentation
 
 - [Architecture Guide](docs/ARCHITECTURE.md) - Detailed architecture and design decisions
-- [Branding Guidelines](docs/BRANDING.md) - KeryxHealth ecosystem branding
-- [Redis Decision](docs/REDIS_DECISION.md) - Why we chose Redis for Hangfire
 - [Plugin Development](docs/PLUGIN_DEVELOPMENT.md) - Create custom transformations _(coming soon)_
 - [Deployment Guide](docs/DEPLOYMENT.md) - Kubernetes, Docker Swarm, cloud deployments _(coming soon)_
-
----
-
-## Comparison to Alternatives
-
-| Feature | KeryxFlux | Mirth Connect | Rhapsody | Azure Logic Apps |
-|---------|-----------|---------------|----------|------------------|
-| Cloud-Native | ? | ? | ? | ? |
-| DevOps-First (YAML) | ? | ? (GUI) | ? (GUI) | ?? (Portal) |
-| Horizontal Scaling | ? | ?? | ?? | ? |
-| Open Source | ? | ? | ? | ? |
-| Self-Hosted | ? | ? | ? | ? |
-| Modern Stack (.NET 8+) | ? | ? (Java) | ? | ? |
-
----
-
-## Roadmap
-
-### Phase 1 (Current - MVP)
-- [x] Core architecture (DDD/Hexagonal)
-- [x] Docket YAML configuration
-- [x] Plugin system
-- [ ] HTTP receiver
-- [ ] RabbitMQ sender/receiver
-- [ ] Hangfire scheduling
-- [ ] Redis integration
-
-### Phase 2 (Q2 2026)
-- [ ] TCP/MLLP receiver
-- [ ] Kafka sender/receiver
-- [ ] Full observability (OpenTelemetry)
-- [ ] Kubernetes Helm charts
-- [ ] Sample plugins (HL7, FHIR, JSON)
-
-### Phase 3 (Q3 2026)
-- [ ] Management UI
-- [ ] Plugin marketplace
-- [ ] Advanced routing rules
-- [ ] Security enhancements
 
 ---
 
@@ -345,7 +303,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 ```bash
 # Install .NET 8 SDK
 # Clone repo
-git clone https://github.com/theelevators/KeryxFlux.git
+git clone https://github.com/keryxlabs/KeryxFlux.git
 
 # Restore packages
 dotnet restore
@@ -367,17 +325,15 @@ Apache 2.0 - see [LICENSE](LICENSE) for details.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/theelevators/KeryxFlux/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/theelevators/KeryxFlux/discussions)
+- **Issues**: [GitHub Issues](https://github.com/keryxlabs/KeryxFlux/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/keryxlabs/KeryxFlux/discussions)
 - **Discord**: _Coming soon_
 
 ---
 
 ## Acknowledgments
 
-Part of the **KeryxHealth** ecosystem, building modern tools for healthcare interoperability.
+Part of the **KeryxLabs** ecosystem, building modern tools for interoperability.
 
 ---
-
-**Built with ?? for the healthcare integration community**
 
