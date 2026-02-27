@@ -6,11 +6,13 @@
 
 ## Context
 
-KeryxFlux is a high-performance, YAML-driven interoperability engine. This roadmap defines the delta required to evolve it into a **Cognitive Mirror Orchestration Engine** — a stateless-execution, stateful-identity AI orchestration layer with domain-specific safety guarantees.
+KeryxFlux is a high-performance, YAML-driven interoperability engine. This roadmap defines the delta required to evolve it into a **Cognitive Mirror Orchestration Engine** — a stateless-execution, stateful-identity AI orchestration layer built around a single core premise: **the only domain is the user.**
 
-The system is **not** a generic AI assistant. It is a purpose-built cognitive layer for high-stakes data domains (initial target: healthcare/hospice medication workflows) where zero error tolerance is a first-class constraint — not an afterthought.
+The system is **not** a generic AI assistant. It is a personal cognitive prosthetic — an orchestration layer that, over time, builds and maintains a dynamic model of the user's reasoning patterns, priorities, decision style, and cognitive fingerprint. Everything else — tasks, tools, workflows, integrations — is a side effect of that identity model.
 
-The irony and the advantage: by constraining the domain, the system can handle generic tasks *more efficiently* than general-purpose assistants, because the attractor state eliminates combinatorial routing ambiguity before any result is produced.
+The system becomes more capable by becoming more *you*, not by trying to be everything to everyone. This is the architecture's core advantage over general-purpose assistants: the attractor state eliminates combinatorial routing ambiguity before any result is produced. The more coherent the identity model, the more efficient and accurate every downstream operation becomes.
+
+This is what AGI should mean — **Adaptive** General Intelligence. Not a system that knows everything, but a system that knows *you*, and grows with you.
 
 ---
 
@@ -19,7 +21,7 @@ The irony and the advantage: by constraining the domain, the system can handle g
 | Principle | Implication |
 |---|---|
 | `stateless_execution_stateful_identity` | Models carry no state. The AVEC context object *is* the identity. |
-| `healthcare_rigor_applied_to_all_layers` | Zero-error tolerance is the bar. No layer is exempt. |
+| `identity_coherence_applied_to_all_layers` | Zero-drift tolerance is the bar. No layer is exempt. |
 | `structured_data_encounters_structured_data` | AVEC context is computable, not descriptive. Every field has a defined effect. |
 | `resonance_not_similarity` | Memory retrieval is attractor-filtered, not keyword-matched. |
 | `plugin_contract_is_the_mcp_base` | `IKeryxFluxPlugin` extends to `IMcpPlugin`. Tools are declared before they are discovered. |
@@ -251,7 +253,7 @@ monthly_summary
 longterm_identity
 ```
 
-Raw data is **never discarded**. Compression changes *retrieval priority*, not data availability. This preserves auditability — a hard requirement for healthcare domain.
+Raw data is **never discarded**. Compression changes *retrieval priority*, not data availability. This preserves a full history of the user's cognitive evolution — the record of who they were, not just who they are now.
 
 ### Cold Start
 On each session boot:
@@ -279,13 +281,12 @@ for each memory_fragment:
 
 OpenClaw deliberately avoids first-class MCP because tool churn destabilizes a generic runtime. This system can make MCP first-class because:
 
-1. The domain is fixed — valid tools are knowable in advance
+1. The identity model is the stable anchor — valid tools are those coherent with the user's attractor state
 2. YAML manifests declare tools before they are discovered
 3. AVEC coherence validation gates every tool execution
-4. Healthcare zero-error-tolerance requires auditability that a bridge cannot provide
+4. Full auditability is a non-negotiable — a bridge cannot provide the traceability required for identity-adjacent operations
 
 ### Dynamic Discovery with Static Safety
-
 ```
 Boot sequence:
   1. ModelRegistry discovers model servers (gRPC health check)
@@ -302,10 +303,10 @@ Boot sequence:
 ### `McpToolManifest` in YAML
 ```yaml
 mcp_tools:
-  - tool_id: medication_reconciliation
-    tier: validator           # which model tier executes this
-    coherence_delta: 0.03     # tighter tolerance than default for medication tools
-    description: "Reconcile medication lists against formulary"
+  - tool_id: deep_research
+    tier: warm_brain          # which model tier executes this
+    coherence_delta: 0.05     # standard tolerance for research tasks
+    description: "Execute deep research and synthesis, filtered through user identity attractor"
     requires_deep_reasoning: false
 ```
 
@@ -372,7 +373,7 @@ service ModelAdapter {
 - [ ] `ResonanceMemoryStore` with attractor-filtered retrieval
 - [ ] `CompressionPipeline` as scheduled docket (compression_model tier)
 - [ ] Daily → weekly → monthly → longterm compression tiers
-- [ ] Raw data retention layer (never discarded — audit requirement)
+- [ ] Raw data retention layer (never discarded — full cognitive history preserved)
 - [ ] Cold start: previous day summary loaded on wake
 - [ ] Retrieval test: identical query under Logic vs Creative attractor returns coherently different memory fragments
 
@@ -384,10 +385,10 @@ service ModelAdapter {
 - [ ] Boot sequence: `discover → cross-reference YAML → register → gate`
 - [ ] Tool execution pipeline: YAML match + live adapter + AVEC coherence check + circuit breaker
 - [ ] `mcp_tools` field in cognitive docket YAML
-- [ ] Healthcare domain test: medication_reconciliation tool with tight coherence delta (.03)
+- [ ] Reference specialist test: deep_research tool executing against user identity attractor with verified coherence delta
 
 ### Phase 5 — Hardening
-**Goal:** Production-ready for healthcare zero-error-tolerance standard.
+**Goal:** Production-ready. Zero identity drift under sustained load.
 
 - [ ] Full audit trail: every model invocation, coherence delta, tool execution logged
 - [ ] AVEC behavioral drift detection across sessions (Ψ tracking)
@@ -461,10 +462,10 @@ KeryxFlux/
 ## Example Cognitive Docket YAML
 
 ```yaml
-name: medication-reconciliation-cognitive
+name: deep-research-cognitive
 version: "1.0.0"
 type: cognitive
-plugin_location: plugins/KeryxFlux.Plugins.MedicationValidator.dll
+plugin_location: plugins/KeryxFlux.Plugins.DeepResearch.dll
 
 avec:
   attractor: logic
@@ -475,25 +476,25 @@ avec:
   coherence_delta_tolerance: 0.04
   psi: 2.1786
 
-model_tier: validator
+model_tier: warm_brain
 
 mcp_tools:
-  - tool_id: medication_reconciliation
-    tier: validator
-    coherence_delta: 0.03
-    description: "Reconcile inbound medication list against formulary and patient record"
-    requires_deep_reasoning: false
-  - tool_id: adverse_interaction_check
+  - tool_id: deep_research
     tier: warm_brain
     coherence_delta: 0.05
-    description: "Check for adverse drug interactions"
+    description: "Execute deep research and synthesis, filtered through user identity attractor"
     requires_deep_reasoning: false
+  - tool_id: perspective_challenge
+    tier: deep_reasoner
+    coherence_delta: 0.08
+    description: "Generate novel perspectives that challenge current attractor state — triggers deep reasoner"
+    requires_deep_reasoning: true
 
 forwarding:
   destinations:
-    - name: ehr-integration
+    - name: user-context-store
       type: http
-      url: https://ehr.internal/api/medication-events
+      url: https://context.internal/api/session-events
       method: POST
       retry_policy:
         max_attempts: 3
@@ -514,7 +515,7 @@ telemetry:
 3. **YAML declares before the system discovers.** No tool can execute that isn't in the docket manifest.
 4. **Circuit breaker is hard.** A tripped breaker requires explicit operator intervention to reset.
 5. **AVEC coherence is behavioral, not structural.** Validation checks attractor alignment, not JSON schema.
-6. **Healthcare domain tolerance is the floor.** Other domains may relax constraints. Healthcare cannot.
+6. **The user's identity is the only domain.** Everything else — tasks, tools, integrations — is emergent from it.
 
 ---
 
