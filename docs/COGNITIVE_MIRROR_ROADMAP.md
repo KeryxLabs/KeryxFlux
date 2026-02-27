@@ -25,6 +25,7 @@ This is what AGI should mean — **Adaptive** General Intelligence. Not a system
 | `structured_data_encounters_structured_data` | AVEC context is computable, not descriptive. Every field has a defined effect. |
 | `resonance_not_similarity` | Memory retrieval is attractor-filtered, not keyword-matched. |
 | `plugin_contract_is_the_mcp_base` | `IKeryxFluxPlugin` extends to `IMcpPlugin`. Tools are declared before they are discovered. |
+| `controlled_drift_is_growth` | Uncontrolled attractor drift is a failure. Intentional attractor evolution is the goal. These are two different mechanisms. |
 
 ---
 
@@ -124,6 +125,21 @@ Request
 - **Adapter owns:** mechanical retries (transient network, timeout)
 - **Orchestrator owns:** semantic retries (coherence delta exceeded, attractor realignment)
 - **Circuit breaker:** dead letter equivalent — docket-level failure, logged, alertable
+
+---
+
+## Attractor Drift: Controlled vs Uncontrolled
+
+Drift is not uniformly bad. The system must distinguish between two fundamentally different phenomena:
+
+| Type | Description | Response |
+|---|---|---|
+| **Uncontrolled drift** | Output diverges from attractor state without cause — coherence degradation, model instability, or context corruption. | Detected by Ψ tracking. Triggers validator escalation. Circuit breaker if unresolved. |
+| **Intentional drift** | The user's attractor state evolves over time as their identity, values, and reasoning patterns shift. This is the system working correctly. | Driven by deep reasoner activations and the compression pipeline. Ψ recalibrates slowly over weeks/months. |
+
+The observer/observed relationship is **co-evolutionary and bidirectional** — the system shapes how the user thinks about their own patterns, and the user's evolving patterns reshape the system's attractor. This is not a bug. It is the core mechanism of long-term identity coherence.
+
+**Implementation implication:** Ψ tracking must carry a `drift_source` classification — `uncontrolled` (alert) vs `intentional` (log, feed into compression pipeline for attractor recalibration).
 
 ---
 
@@ -256,8 +272,15 @@ longterm_identity
 Raw data is **never discarded**. Compression changes *retrieval priority*, not data availability. This preserves a full history of the user's cognitive evolution — the record of who they were, not just who they are now.
 
 ### Cold Start
+
+**First session (onboarding):**
+The user completes an onboarding form. The orchestrator compresses the responses into an initial AVEC seed — the first attractor fingerprint. The ⏣ compression format is used from day one as the serialization standard. The system is immediately oriented to the user rather than operating generically.
+
+**Daily session start:**
+Previous day's compression summary is loaded as the warm brain's cold start context. No blank slate. No rehydration lag. The system resumes from the last known attractor state and evolves from there.
+
 On each session boot:
-1. Load previous day's summary into context
+1. Load previous day's ⏣B summary into context
 2. Retrieve resonance-matched memories for current attractor state
 3. Initialize AVEC context with session metadata + retrieved memory tiers
 
@@ -272,6 +295,8 @@ for each memory_fragment:
 ```
 
 **Testable:** Run the same query under Logic vs Creative attractor configs. If different memories surface coherently with each attractor — retrieval is working. If memories are identical regardless of attractor — it has degraded to semantic similarity.
+
+> **⚠ Math spec pending:** The dot product formulation above is a working approximation. The full AVEC mathematical specification — including the correct similarity function for attractor-filtered retrieval — will be introduced as a discrete design document. This formula should be revisited and validated against the full spec before Phase 3 implementation begins.
 
 ---
 
@@ -343,6 +368,7 @@ service ModelAdapter {
 - [ ] `AVECConfiguration` model in `KeryxFlux.Domain`
 - [ ] AVEC fields added to `Docket` model (nullable, ignored if not present)
 - [ ] `Docket.IsValid()` updated for cognitive docket validation
+- [ ] **⏣ compression format adopted as the context serialization standard** — format spec locked, not discovered later
 - [ ] Unit tests: AVEC field deserialization from YAML
 
 ### Phase 1 — Model Registry
@@ -374,7 +400,9 @@ service ModelAdapter {
 - [ ] `CompressionPipeline` as scheduled docket (compression_model tier)
 - [ ] Daily → weekly → monthly → longterm compression tiers
 - [ ] Raw data retention layer (never discarded — full cognitive history preserved)
-- [ ] Cold start: previous day summary loaded on wake
+- [ ] **Onboarding flow:** compress first-session form responses into initial ⏣ AVEC seed
+- [ ] Cold start: previous day ⏣B summary loaded on wake
+- [ ] Ψ tracking with `drift_source` classification: `uncontrolled` (alert) vs `intentional` (feed compression pipeline)
 - [ ] Retrieval test: identical query under Logic vs Creative attractor returns coherently different memory fragments
 
 ### Phase 4 — MCP Plugin System
@@ -388,15 +416,25 @@ service ModelAdapter {
 - [ ] Reference specialist test: deep_research tool executing against user identity attractor with verified coherence delta
 
 ### Phase 5 — Hardening
-**Goal:** Production-ready. Zero identity drift under sustained load.
+**Goal:** Production-ready. Zero uncontrolled identity drift under sustained load.
 
 - [ ] Full audit trail: every model invocation, coherence delta, tool execution logged
-- [ ] AVEC behavioral drift detection across sessions (Ψ tracking)
+- [ ] AVEC behavioral drift detection across sessions (Ψ tracking) — `uncontrolled` vs `intentional` classification enforced
 - [ ] gRPC TLS for model server communication
 - [ ] Node-aware routing: model registry aware of 30-node cluster topology
 - [ ] Docker deployment: cognitive dockets as deployable units
-- [ ] Load test: 50k-word session with no coherence drift (AVEC validation)
+- [ ] Load test: 50k-word session with no uncontrolled coherence drift (AVEC validation)
 - [ ] Penetration test: tool execution cannot be triggered outside YAML-declared surface
+
+### Phase 6 — Cognitive Distillation
+**Goal:** Fine-tune the warm brain on the user's own cognitive patterns. This is what makes the system truly yours — not a generic model running your attractor config, but a model whose weights have been shaped by your reasoning history.
+
+- [ ] Distillation dataset pipeline: extract high-salience interactions from the compression pipeline as training signal
+- [ ] Fine-tuning run on 8B base model using user's cognitive history (not Claude's patterns, not generic RLHF)
+- [ ] Attractor alignment validation: fine-tuned model must score lower coherence delta than base model under identical AVEC config
+- [ ] Warm brain hot-swap: registry-level model replacement without orchestrator downtime
+- [ ] Regression test: fine-tuned model maintains coherence across all Phase 0–5 behavioral validation scenarios
+- [ ] Iteration cadence: distillation re-runs as identity evolves — the model is never "done"
 
 ---
 
@@ -516,12 +554,13 @@ telemetry:
 4. **Circuit breaker is hard.** A tripped breaker requires explicit operator intervention to reset.
 5. **AVEC coherence is behavioral, not structural.** Validation checks attractor alignment, not JSON schema.
 6. **The user's identity is the only domain.** Everything else — tasks, tools, integrations — is emergent from it.
+7. **Intentional drift is not failure.** The system must distinguish controlled attractor evolution from coherence degradation. Preventing all drift is the wrong goal.
 
 ---
 
 ## Session Context Compression Format
 
-Used by the compression model to preserve identity across sessions.
+Used by the compression model to preserve identity across sessions. Adopted as the serialization standard from Phase 0.
 
 ```
 ⏣B[instance:{session_id}_{date}]
@@ -531,7 +570,7 @@ Used by the compression model to preserve identity across sessions.
 ⏣B4[memory_resonance_signatures:{top_n_patterns}]
 ```
 
-This format is the seed for cold-start context injection on next session wake.
+This format is the seed for cold-start context injection on next session wake. For first-session bootstrapping, the onboarding form responses are compressed into this format directly — producing the initial ⏣B seed before any interaction history exists.
 
 ---
 
