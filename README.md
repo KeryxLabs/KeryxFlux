@@ -35,7 +35,6 @@ KeryxFlux is a modern, horizontally scalable data orchestration framework that e
 
 ✨ **Plugin System**
 - Hot-loadable transformation plugins (.NET assemblies)
-- Integrate with [KeryxPars](https://github.com/keryxlabs/KeryxPars) for message parsing
 
 ✨ **Dynamic Date Templating**
 - Time-based URL generation with lookback windows
@@ -308,16 +307,8 @@ Compile to `.dll` and place in the `plugins/` directory.
 
 ---
 
-## Related Projects
-
-- **[KeryxPars**: Interface message parsing library)
-- Use KeryxPars inside KeryxFlux plugins for robust message parsing
-
----
-
 ## Documentation
 
-- [Architecture Guide](docs/ARCHITECTURE.md) - Detailed architecture and design decisions
 - [Plugin Development](docs/PLUGIN_DEVELOPMENT.md) - Create custom transformations _(coming soon)_
 - [Deployment Guide](docs/DEPLOYMENT.md) - Kubernetes, Docker Swarm, cloud deployments _(coming soon)_
 
@@ -362,7 +353,7 @@ Apache 2.0 - see [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 
-Part of the **KeryxLabs** ecosystem, building modern tools for interoperability.
+Part of the **KeryxLabs** ecosystem, building modern tools for data flows.
 
 ---
 
