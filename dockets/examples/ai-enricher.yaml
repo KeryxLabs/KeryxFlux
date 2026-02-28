@@ -1,0 +1,26 @@
+# AI-Enhanced Data Processing
+# Demonstrates model-enhanced transformations using IModelPlugin
+
+name: ai-enricher
+version: 1.0.0
+type: receiver
+plugin_location: ./plugins/AiEnricher.dll
+
+receiver:
+  type: http
+  endpoint: /enrich
+
+configuration:
+  model_endpoint: "http://localhost:11434/api/generate"
+  model: "llama3.2"
+
+forwarding:
+  destinations:
+    - name: enriched-data-store
+      type: http
+      url: "http://localhost:8080/api/enriched"
+      method: POST
+
+telemetry:
+  enabled: true
+  trace_headers: true

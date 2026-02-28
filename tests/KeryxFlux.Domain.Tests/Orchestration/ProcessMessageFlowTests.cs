@@ -6,6 +6,7 @@ using KeryxFlux.Domain.Models;
 using KeryxFlux.Domain.Models.Dockets;
 using KeryxFlux.Domain.Ports;
 using KeryxFlux.Domain.Tests.TestPlugins;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
@@ -23,6 +24,7 @@ public class ProcessMessageFlowTests
     private readonly Mock<IDocketManager> _mockDocketManager;
     private readonly Mock<IPluginManager> _mockPluginManager;
     private readonly Mock<ILogger<ProcessMessageCommandHandler>> _mockLogger;
+    private readonly Mock<IMediator> _mockMediator;
     private readonly List<Mock<DomainSender>> _mockSenders;
     private readonly ProcessMessageCommandHandler _handler;
 
@@ -31,6 +33,7 @@ public class ProcessMessageFlowTests
         _mockDocketManager = new Mock<IDocketManager>();
         _mockPluginManager = new Mock<IPluginManager>();
         _mockLogger = new Mock<ILogger<ProcessMessageCommandHandler>>();
+        _mockMediator = new Mock<IMediator>();
         _mockSenders = new List<Mock<DomainSender>>();
 
         // Create mock senders for each protocol
@@ -47,7 +50,8 @@ public class ProcessMessageFlowTests
             _mockDocketManager.Object,
             _mockPluginManager.Object,
             _mockLogger.Object,
-            senders);
+            senders,
+            _mockMediator.Object);
     }
 
     [Fact]

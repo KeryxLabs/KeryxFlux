@@ -19,17 +19,20 @@ public sealed class ProcessMessageCommandHandler : IRequestHandler<ProcessMessag
     private readonly IPluginManager _pluginManager;
     private readonly ILogger<ProcessMessageCommandHandler> _logger;
     private readonly IEnumerable<DomainSender> _senders;
+    private readonly IMediator _mediator;
 
     public ProcessMessageCommandHandler(
         IDocketManager docketManager,
         IPluginManager pluginManager,
         ILogger<ProcessMessageCommandHandler> logger,
-        IEnumerable<DomainSender> senders)
+        IEnumerable<DomainSender> senders,
+        IMediator mediator)
     {
         _docketManager = docketManager;
         _pluginManager = pluginManager;
         _logger = logger;
         _senders = senders;
+        _mediator = mediator;
     }
 
     public async Task<ProcessMessageResult> Handle(ProcessMessageCommand request, CancellationToken cancellationToken)
@@ -54,15 +57,33 @@ public sealed class ProcessMessageCommandHandler : IRequestHandler<ProcessMessag
 
             var plugin = pluginResult.Value;
 
-            // 3. Verify plugin is a receiver plugin
+            // 3. Check plugin type and route appropriately
+            // Route to model command handler if plugin implements IModelPlugin
+            if (plugin is IModelPlugin)
+            {
+                _logger.LogInformation(
+                    "Plugin {PluginName} implements IModelPlugin. Routing to ProcessModelCommandHandler.",
+                    plugin.Name
+                );
+
+                var modelCommand = new ProcessModelCommand
+                {
+                    DocketName = request.DocketName,
+                    Message = request.Message
+                };
+
+                return await _mediator.Send(modelCommand, cancellationToken);
+            }
+
+            // Standard receiver plugin flow
             if (plugin is not IReceiverPlugin receiverPlugin)
             {
                 _logger.LogError(
-                    "Plugin {PluginName} does not implement IReceiverPlugin (implements: {PluginType})",
+                    "Plugin {PluginName} does not implement IReceiverPlugin or IModelPlugin (implements: {PluginType})",
                     plugin.Name,
                     plugin.GetType().Name);
                 return ProcessMessageResult.Failure(
-                    $"Plugin must implement IReceiverPlugin for receiver-type dockets");
+                    $"Plugin must implement IReceiverPlugin or IModelPlugin for receiver-type dockets");
             }
 
             // 4. Create transformation context with docket configuration
