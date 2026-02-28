@@ -3,6 +3,7 @@ namespace KeryxFlux.Domain.Ports;
 /// <summary>
 /// Port interface for receiving incoming data.
 /// Implementations handle protocol-specific details (HTTP, RabbitMQ, Kafka, TCP).
+/// Note: For active receivers like RabbitMQ, use dedicated service classes instead.
 /// </summary>
 public interface IReceiver
 {
@@ -12,7 +13,7 @@ public interface IReceiver
     string Type { get; }
 
     /// <summary>
-    /// Start receiving data based on docket configuration.
+    /// Start receiving data.
     /// This should be non-blocking and handle data asynchronously.
     /// </summary>
     /// <param name="cancellationToken">Token to signal shutdown</param>
@@ -23,3 +24,5 @@ public interface IReceiver
     /// </summary>
     Task StopAsync(CancellationToken cancellationToken = default);
 }
+
+

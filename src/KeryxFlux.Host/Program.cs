@@ -9,7 +9,6 @@ using KeryxFlux.Domain.Ports;
 using KeryxFlux.Infrastructure.Receivers;
 using KeryxFlux.Infrastructure.Senders;
 using KeryxFlux.Infrastructure.MessageBrokers.RabbitMq;
-using KeryxFlux.Infrastructure.Factories;
 using KeryxFlux.Host.Extensions;
 using Hangfire;
 using Hangfire.Redis.StackExchange;
@@ -27,16 +26,13 @@ builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IPluginManager, PluginManager>();
 builder.Services.AddSingleton<IDocketManager, DocketManager>();
 
-// Register RabbitMQ connection service
+// Register RabbitMQ services
 builder.Services.AddSingleton<IRabbitMqConnectionService, RabbitMqConnectionService>();
+builder.Services.AddSingleton<IRabbitMqReceiverService, RabbitMqReceiver>(); // Service for managing RabbitMQ consumers
 
-// Register receiver and sender factories
-builder.Services.AddSingleton<IReceiverFactory, ReceiverFactory>();
-builder.Services.AddSingleton<ISenderFactory, SenderFactory>();
-
-// Register individual receivers and senders (for legacy/direct use)
-builder.Services.AddSingleton<IReceiver, HttpReceiver>();
+// Register senders - looked up by their Type property
 builder.Services.AddSingleton<ISender, HttpSender>();
+builder.Services.AddSingleton<ISender, RabbitMqSender>();
 
 // Register polling jobs
 builder.Services.AddScoped<IPollJob, TenantEndpointPollJob>();
@@ -82,6 +78,20 @@ builder.Services.AddSingleton<IDocketMonitor>(sp =>
 builder.Services.AddHostedService<DocketOrchestrationService>();
 
 var app = builder.Build();
+
+// Log registered services at startup
+using (var scope = app.Services.CreateScope())
+{
+    var senders = scope.ServiceProvider.GetServices<ISender>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    logger.LogInformation(
+        "Registered senders: {SenderTypes}",
+        string.Join(", ", senders.Select(s => s.Type)));
+    
+    logger.LogInformation(
+        "RabbitMQ receiver service registered for dynamic consumer management");
+}
 
 // Enable Hangfire Dashboard (IMPORTANT: Secure this in production!)
 app.UseHangfireDashboard("/hangfire", new DashboardOptions

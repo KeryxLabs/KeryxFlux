@@ -1,181 +1,219 @@
+using KeryxFlux.Application.Commands;
 using KeryxFlux.Contracts;
+using KeryxFlux.Domain.Abstractions;
 using KeryxFlux.Domain.Models;
-using KeryxFlux.Domain.Models.Dockets;
 using KeryxFlux.Domain.Ports;
 using MassTransit;
+using MediatR;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 
 namespace KeryxFlux.Infrastructure.MessageBrokers.RabbitMq;
 
 /// <summary>
-/// RabbitMQ receiver implementation using MassTransit.
-/// Consumes messages from RabbitMQ queues and processes them through the plugin pipeline.
+/// Service for managing RabbitMQ consumers for receiver dockets.
+/// Dynamically registers/unregisters MassTransit consumers as dockets are loaded/unloaded.
+/// Similar to JobRegistrationService for pollers, but for RabbitMQ receivers.
 /// </summary>
-public class RabbitMqReceiver : IReceiver
+public class RabbitMqReceiver : IRabbitMqReceiverService
 {
-    public string Type => "rabbitmq";
-
     private readonly IRabbitMqConnectionService _connectionService;
     private readonly ILogger<RabbitMqReceiver> _logger;
-    private readonly ReceiverConfiguration _config;
-    private readonly IReceiverPlugin _plugin;
-    private readonly Docket _docket;
-    private IBusControl? _bus;
+    private readonly IDocketManager _docketManager;
+    private readonly IPluginManager _pluginManager;
+    private readonly IMediator _mediator;
+    
+    // Track active consumers: docketName ? (queueName, busControl)
+    private readonly ConcurrentDictionary<string, (string QueueName, IBusControl Bus)> _activeConsumers = new();
 
     public RabbitMqReceiver(
         IRabbitMqConnectionService connectionService,
         ILogger<RabbitMqReceiver> logger,
-        ReceiverConfiguration config,
-        IReceiverPlugin plugin,
-        Docket docket)
+        IDocketManager docketManager,
+        IPluginManager pluginManager,
+        IMediator mediator)
     {
         _connectionService = connectionService;
         _logger = logger;
-        _config = config;
-        _plugin = plugin;
-        _docket = docket;
+        _docketManager = docketManager;
+        _pluginManager = pluginManager;
+        _mediator = mediator;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Register a RabbitMQ consumer for the specified docket.
+    /// Called by DocketOrchestrationService when a receiver docket is loaded.
+    /// </summary>
+    public async Task RegisterConsumerForDocketAsync(Docket docket)
     {
-        if (string.IsNullOrEmpty(_config.ConnectionString))
+        if (docket.Receiver == null)
         {
-            throw new InvalidOperationException("RabbitMQ connection_string is required");
+            throw new InvalidOperationException($"Docket {docket.Name} has no receiver configuration");
         }
 
-        if (string.IsNullOrEmpty(_config.QueueName))
+        var config = docket.Receiver;
+
+        if (string.IsNullOrEmpty(config.ConnectionString))
         {
-            throw new InvalidOperationException("RabbitMQ queue_name is required");
+            throw new InvalidOperationException($"RabbitMQ connection_string is required for docket {docket.Name}");
+        }
+
+        if (string.IsNullOrEmpty(config.QueueName))
+        {
+            throw new InvalidOperationException($"RabbitMQ queue_name is required for docket {docket.Name}");
         }
 
         _logger.LogInformation(
-            "Starting RabbitMQ receiver for queue: {QueueName} on {ConnectionString}",
-            _config.QueueName,
-            MaskConnectionString(_config.ConnectionString));
+            "Registering RabbitMQ consumer for docket: {DocketName}, queue: {QueueName}",
+            docket.Name,
+            config.QueueName);
 
-        // Configure RabbitMQ consumer
-        _bus = await _connectionService.GetOrCreateBusAsync(_config.ConnectionString, cfg =>
+        // Create MassTransit bus with consumer
+        var bus = await _connectionService.GetOrCreateBusAsync(config.ConnectionString, cfg =>
         {
-            cfg.ReceiveEndpoint(_config.QueueName, e =>
+            cfg.ReceiveEndpoint(config.QueueName, e =>
             {
                 // Configure queue properties
-                e.Durable = _config.Durable ?? true;
-                e.AutoDelete = _config.AutoDelete ?? false;
+                e.Durable = config.Durable ?? true;
+                e.AutoDelete = config.AutoDelete ?? false;
 
-                // Set prefetch count if specified
-                if (_config.PrefetchCount.HasValue)
+                if (config.PrefetchCount.HasValue)
                 {
-                    e.PrefetchCount = (ushort)_config.PrefetchCount.Value;
+                    e.PrefetchCount = (ushort)config.PrefetchCount.Value;
                 }
 
-                // Set concurrent consumers
-                if (_config.ConcurrentConsumers.HasValue)
+                if (config.ConcurrentConsumers.HasValue)
                 {
-                    e.ConcurrentMessageLimit = _config.ConcurrentConsumers.Value;
+                    e.ConcurrentMessageLimit = config.ConcurrentConsumers.Value;
                 }
 
                 // Bind to exchange if configured
-                if (!string.IsNullOrEmpty(_config.ExchangeName))
+                if (!string.IsNullOrEmpty(config.ExchangeName))
                 {
-                    e.Bind(_config.ExchangeName, x =>
+                    e.Bind(config.ExchangeName, x =>
                     {
-                        if (!string.IsNullOrEmpty(_config.RoutingKey))
+                        if (!string.IsNullOrEmpty(config.RoutingKey))
                         {
-                            x.RoutingKey = _config.RoutingKey;
+                            x.RoutingKey = config.RoutingKey;
                         }
                         
-                        if (!string.IsNullOrEmpty(_config.ExchangeType))
+                        if (!string.IsNullOrEmpty(config.ExchangeType))
                         {
-                            x.ExchangeType = _config.ExchangeType;
+                            x.ExchangeType = config.ExchangeType;
                         }
                     });
                 }
 
-                // Register message handler for byte array messages
+                // Register generic message handler
                 e.Handler<byte[]>(async context =>
                 {
-                    await HandleMessageAsync(context.Message, cancellationToken);
+                    await HandleMessageAsync(docket.Name, context.Message);
                 });
             });
         });
 
-        _logger.LogInformation("RabbitMQ receiver started successfully for queue: {QueueName}", _config.QueueName);
+        // Track the consumer
+        _activeConsumers[docket.Name] = (config.QueueName, bus);
+
+        _logger.LogInformation(
+            "RabbitMQ consumer registered successfully for docket: {DocketName}, queue: {QueueName}",
+            docket.Name,
+            config.QueueName);
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Unregister RabbitMQ consumer for the specified docket.
+    /// Called by DocketOrchestrationService when a docket is unloaded.
+    /// </summary>
+    public async Task UnregisterConsumerForDocketAsync(string docketName)
     {
-        _logger.LogInformation("Stopping RabbitMQ receiver for queue: {QueueName}", _config.QueueName);
-
-        if (_bus != null)
+        if (!_activeConsumers.TryRemove(docketName, out var consumer))
         {
-            await _bus.StopAsync(cancellationToken);
+            _logger.LogWarning("No active consumer found for docket: {DocketName}", docketName);
+            return;
         }
 
-        _logger.LogInformation("RabbitMQ receiver stopped");
+        _logger.LogInformation("Unregistering RabbitMQ consumer for docket: {DocketName}", docketName);
+
+        try
+        {
+            await consumer.Bus.StopAsync();
+            _logger.LogInformation("RabbitMQ consumer stopped for docket: {DocketName}", docketName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error stopping RabbitMQ consumer for docket: {DocketName}", docketName);
+        }
     }
 
-    private async Task HandleMessageAsync(byte[] payload, CancellationToken cancellationToken)
+    private async Task HandleMessageAsync(string docketName, byte[] payload)
     {
         try
         {
             _logger.LogInformation(
-                "Received message from RabbitMQ queue {QueueName}. Size: {Size} bytes",
-                _config.QueueName,
+                "Received RabbitMQ message for docket: {DocketName}, size: {Size} bytes",
+                docketName,
                 payload.Length);
 
-            // Create transformation context
-            var context = new TransformationContext
+            // Get the docket
+            if (!_docketManager.TryGetDocket(docketName, out var docket))
             {
-                DocketName = _docket.Name,
-                ReceiverType = "rabbitmq",
-                ReceivedAt = DateTimeOffset.UtcNow,
+                _logger.LogError("Docket not found: {DocketName}", docketName);
+                throw new InvalidOperationException($"Docket '{docketName}' not found");
+            }
+
+            // Load plugin
+            var pluginResult = _pluginManager.LoadPlugin(docket.PluginLocation);
+            if (!pluginResult.IsSuccess || pluginResult.Value is not IReceiverPlugin plugin)
+            {
+                _logger.LogError("Failed to load receiver plugin for docket {DocketName}: {Error}", 
+                    docketName, pluginResult.Error);
+                throw new InvalidOperationException($"Plugin load failed: {pluginResult.Error}");
+            }
+
+            // Create ReceivedMessage
+            var message = new ReceivedMessage
+            {
+                Payload = payload,
+                ContentType = "application/octet-stream", // RabbitMQ doesn't enforce content type
                 CorrelationId = Guid.NewGuid().ToString(),
-                DocketConfiguration = _docket.Configuration ?? new Dictionary<string, string>(),
-                SourceEndpoint = _config.QueueName
+                SourceEndpoint = docket.Receiver?.QueueName ?? "unknown",
+                Metadata = new Dictionary<string, string>
+                {
+                    { "source", "rabbitmq" },
+                    { "queue", docket.Receiver?.QueueName ?? "unknown" }
+                }
             };
 
-            // Transform through plugin
-            var result = _plugin.Transform(payload, context);
+            // Send to MediatR pipeline (reuses ProcessMessageCommandHandler)
+            var command = new ProcessMessageCommand
+            {
+                DocketName = docketName,
+                Message = message
+            };
+
+            var result = await _mediator.Send(command);
 
             if (result.IsSuccess)
             {
                 _logger.LogInformation(
-                    "Successfully processed RabbitMQ message from queue {QueueName}",
-                    _config.QueueName);
-
-                // TODO: Forward to destinations if configured
-                // This will be handled by the forwarding layer
+                    "Successfully processed RabbitMQ message for docket {DocketName}. Forwarded to {Count} destinations.",
+                    docketName,
+                    result.DestinationsForwarded);
             }
             else
             {
                 _logger.LogError(
-                    "Failed to transform RabbitMQ message from queue {QueueName}. Error: {Error}",
-                    _config.QueueName,
+                    "Failed to process RabbitMQ message for docket {DocketName}: {Error}",
+                    docketName,
                     result.ErrorMessage);
-
-                // Message will be requeued or sent to DLQ based on RabbitMQ configuration
-                throw new InvalidOperationException($"Transformation failed: {result.ErrorMessage}");
+                throw new InvalidOperationException($"Message processing failed: {result.ErrorMessage}");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,
-                "Error processing RabbitMQ message from queue {QueueName}",
-                _config.QueueName);
+            _logger.LogError(ex, "Error handling RabbitMQ message for docket: {DocketName}", docketName);
             throw; // Let MassTransit handle retry/DLQ
-        }
-    }
-
-    private static string MaskConnectionString(string connectionString)
-    {
-        try
-        {
-            var uri = new Uri(connectionString);
-            return $"amqp://***:***@{uri.Host}:{uri.Port}{uri.AbsolutePath}";
-        }
-        catch
-        {
-            return "***";
         }
     }
 }

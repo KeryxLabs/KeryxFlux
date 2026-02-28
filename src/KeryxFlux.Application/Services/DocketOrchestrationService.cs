@@ -3,6 +3,8 @@ using KeryxFlux.Application.Jobs;
 using KeryxFlux.Domain.Abstractions;
 using KeryxFlux.Domain.Models;
 using KeryxFlux.Domain.Models.Dockets;
+using KeryxFlux.Domain.Ports;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -18,15 +20,18 @@ public class DocketOrchestrationService : IHostedService
     private readonly ILogger<DocketOrchestrationService> _logger;
     private readonly IDocketMonitor _docketMonitor;
     private readonly JobRegistrationService _jobRegistrationService;
+    private readonly IServiceProvider _serviceProvider;
 
     public DocketOrchestrationService(
         ILogger<DocketOrchestrationService> logger,
         IDocketMonitor docketMonitor,
-        JobRegistrationService jobRegistrationService)
+        JobRegistrationService jobRegistrationService,
+        IServiceProvider serviceProvider)
     {
         _logger = logger;
         _docketMonitor = docketMonitor;
         _jobRegistrationService = jobRegistrationService;
+        _serviceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -81,22 +86,29 @@ public class DocketOrchestrationService : IHostedService
             _logger.LogInformation("Registering Hangfire jobs for poller docket: {DocketName}", e.Docket.Name);
             _jobRegistrationService.RegisterDocketJobs(e.Docket);
         }
-
-
-        // Docket is now in DocketManager - no need to register endpoints here
-        // Routing happens via catch-all endpoint that queries DocketManager
+        // Start receivers for receiver dockets
+        else if (e.Docket.Type == DocketType.Receiver)
+        {
+            _logger.LogInformation("Starting receiver for docket: {DocketName}", e.Docket.Name);
+            RegisterReceiverForDocket(e.Docket);
+        }
     }
 
     private void HandleDocketUnloaded(MonitorInfoEventArgs e)
     {
-
         _logger.LogInformation("Docket unloaded: {DocketName}", e.Docket.Name);
         
-        // Unregister Hangfire jobs for this docket
+        // Unregister Hangfire jobs for poller dockets
         if (e.Docket.Type == DocketType.Poller)
         {
             _logger.LogInformation("Unregistering Hangfire jobs for docket: {DocketName}", e.Docket.Name);
             _jobRegistrationService.UnregisterDocketJobs(e.Docket);
+        }
+        // Unregister receivers for receiver dockets
+        else if (e.Docket.Type == DocketType.Receiver)
+        {
+            _logger.LogInformation("Stopping receiver for docket: {DocketName}", e.Docket.Name);
+            UnregisterReceiverForDocket(e.Docket);
         }
     }
 
@@ -116,6 +128,74 @@ public class DocketOrchestrationService : IHostedService
     {
         _logger.LogError("DocketMonitor error: {ErrorCode} - {ErrorDetails}", 
             e.Error.Code, e.Error.Details);
+    }
+
+    private void RegisterReceiverForDocket(Docket docket)
+    {
+        if (docket.Receiver == null)
+        {
+            _logger.LogWarning("Docket {DocketName} is type receiver but has no receiver configuration", docket.Name);
+            return;
+        }
+
+        var receiverType = docket.Receiver.Type.ToLowerInvariant();
+
+        // Handle RabbitMQ receivers
+        if (receiverType == "rabbitmq")
+        {
+            var rabbitMqReceiver = _serviceProvider.GetService<IRabbitMqReceiverService>();
+            if (rabbitMqReceiver == null)
+            {
+                _logger.LogError("IRabbitMqReceiverService not registered");
+                return;
+            }
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await rabbitMqReceiver.RegisterConsumerForDocketAsync(docket);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to register RabbitMQ consumer for docket {DocketName}", docket.Name);
+                }
+            });
+        }
+        // HTTP receivers don't need explicit registration (handled by ASP.NET endpoints)
+        else if (receiverType == "http")
+        {
+            _logger.LogInformation("HTTP receiver for docket {DocketName} uses ASP.NET endpoints - no registration needed", docket.Name);
+        }
+        else
+        {
+            _logger.LogWarning("Unknown receiver type {ReceiverType} for docket {DocketName}", receiverType, docket.Name);
+        }
+    }
+
+    private void UnregisterReceiverForDocket(Docket docket)
+    {
+        if (docket.Receiver == null) return;
+
+        var receiverType = docket.Receiver.Type.ToLowerInvariant();
+
+        if (receiverType == "rabbitmq")
+        {
+            var rabbitMqReceiver = _serviceProvider.GetService<IRabbitMqReceiverService>();
+            if (rabbitMqReceiver == null) return;
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await rabbitMqReceiver.UnregisterConsumerForDocketAsync(docket.Name);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to unregister RabbitMQ consumer for docket {DocketName}", docket.Name);
+                }
+            });
+        }
     }
 }
 
