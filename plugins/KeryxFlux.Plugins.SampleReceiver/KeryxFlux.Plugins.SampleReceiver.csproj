@@ -4,6 +4,19 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageId>KeryxFlux.Plugins.SampleReceiver</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>KeryxLabs Contributors</Authors>
+    <Company>KeryxLabs</Company>
+    <Product>KeryxFlux</Product>
+    <Description>Example IReceiverPlugin for KeryxFlux (basic transformation)</Description>
+    <PackageTags>plugin;receiver;keryxflux;dotnet</PackageTags>
+    <RepositoryUrl>https://github.com/KeryxLabs/KeryxFlux</RepositoryUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/KeryxLabs/KeryxFlux</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
   </PropertyGroup>
 
   <ItemGroup>

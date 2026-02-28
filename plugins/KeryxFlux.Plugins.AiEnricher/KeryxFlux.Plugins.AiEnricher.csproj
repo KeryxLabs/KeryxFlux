@@ -5,6 +5,19 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <PackageId>KeryxFlux.Plugins.AiEnricher</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>KeryxLabs Contributors</Authors>
+    <Company>KeryxLabs</Company>
+    <Product>KeryxFlux</Product>
+    <Description>Example IModelPlugin for KeryxFlux (AI/ML model enrichment)</Description>
+    <PackageTags>plugin;ai;llm;enrichment;keryxflux;dotnet</PackageTags>
+    <RepositoryUrl>https://github.com/KeryxLabs/KeryxFlux</RepositoryUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/KeryxLabs/KeryxFlux</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
   </PropertyGroup>
 
   <ItemGroup>

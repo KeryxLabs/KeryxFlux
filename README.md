@@ -153,6 +153,8 @@ public interface IPollerPlugin : IKeryxFluxPlugin
 ### IModelPlugin
 AI/ML model-enhanced transformations.
 
+
+
 **Use when:** Calling AI models (Ollama, OpenAI), LLM enrichment, classification
 
 ```csharp

@@ -4,6 +4,19 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageId>KeryxFlux.Infrastructure</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>KeryxLabs Contributors</Authors>
+    <Company>KeryxLabs</Company>
+    <Product>KeryxFlux</Product>
+    <Description>Infrastructure adapters for KeryxFlux (HTTP, RabbitMQ, Kafka, gRPC, TCP)</Description>
+    <PackageTags>data;orchestration;integration;infrastructure;dotnet;tcp;kafka;rabbitmq;grpc</PackageTags>
+    <RepositoryUrl>https://github.com/KeryxLabs/KeryxFlux</RepositoryUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/KeryxLabs/KeryxFlux</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
   </PropertyGroup>
 
   <ItemGroup>

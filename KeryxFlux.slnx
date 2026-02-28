@@ -1,5 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <File Path="CONTRIBUTING.md" />
+    <File Path="DEVELOPMENT.md" />
+    <File Path="DISCLAIMER.md" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
     <Project Path="src/KeryxFlux.Application/KeryxFlux.Application.csproj" />
     <Project Path="src/KeryxFlux.Cli/KeryxFlux.Cli.csproj" />
     <Project Path="src/KeryxFlux.Contracts/KeryxFlux.Contracts.csproj" />
