@@ -121,13 +121,36 @@ public sealed class ProcessMessageCommandHandler : IRequestHandler<ProcessMessag
                     );
                 }
 
+                // Build headers with destination-specific configuration
+                var headers = new Dictionary<string, string>();
+
+                // Add RabbitMQ-specific headers
+                if (destination.Type.Equals("rabbitmq", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.IsNullOrEmpty(destination.ConnectionString))
+                        headers["connection_string"] = destination.ConnectionString;
+                    
+                    if (!string.IsNullOrEmpty(destination.ExchangeName))
+                        headers["exchange_name"] = destination.ExchangeName;
+                    
+                    if (!string.IsNullOrEmpty(destination.RoutingKey))
+                        headers["routing_key"] = destination.RoutingKey;
+                    
+                    if (!string.IsNullOrEmpty(destination.ExchangeType))
+                        headers["exchange_type"] = destination.ExchangeType;
+                    
+                    if (destination.Durable.HasValue)
+                        headers["durable"] = destination.Durable.Value.ToString();
+                }
+
                 var outboundMessage = new OutboundMessage
                 {
                     DestinationName = destinationUrl,
                     Payload = transformResult.Data!,
                     ContentType = transformResult.ContentType ?? "application/octet-stream",
                     CorrelationId = request.Message.CorrelationId,
-                    Timeout = TimeSpan.FromSeconds(destination.TimeoutSeconds)
+                    Timeout = TimeSpan.FromSeconds(destination.TimeoutSeconds),
+                    Headers = headers
                 };
 
                 var sendResult = await sender.SendAsync(outboundMessage, cancellationToken);
