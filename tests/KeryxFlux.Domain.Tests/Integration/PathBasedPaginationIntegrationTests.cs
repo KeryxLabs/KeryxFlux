@@ -111,7 +111,7 @@ public class PathBasedPaginationIntegrationTests
             }
         };
 
-        // Act
+       
         var result = PathTemplateResolver.ResolveWithDates(template, staticVars, dateVars, baseTime);
 
         result.ShouldBe("https://api.ci.example/ORG001/resource/Artifact/1/100?since=2025-01-15T14:00:00Z");

@@ -1,6 +1,6 @@
 using KeryxFlux.Domain.Models.Dockets;
 using KeryxFlux.Domain.Utilities;
-using Xunit;
+using Shouldly;
 
 namespace KeryxFlux.Domain.Tests.Utilities;
 
@@ -9,7 +9,7 @@ public class DateTemplateResolverTests
     [Fact]
     public void ResolveDateVariable_WithHourOffset_ReturnsCorrectDate()
     {
-        // Arrange
+       
         var baseTime = new DateTimeOffset(2025, 1, 15, 15, 30, 0, TimeSpan.Zero);
         var dateVar = new DateVariableConfiguration
         {
@@ -19,17 +19,17 @@ public class DateTemplateResolverTests
             Timezone = "UTC"
         };
 
-        // Act
+       
         var result = DateTemplateResolver.ResolveDateVariable(dateVar, baseTime);
 
-        // Assert
-        Assert.Equal("2025-01-15T14:30:00Z", result);
+       
+        result.ShouldBe("2025-01-15T14:30:00Z");
     }
 
     [Fact]
     public void ResolveDateVariable_WithDayOffset_ReturnsCorrectDate()
     {
-        // Arrange
+       
         var baseTime = new DateTimeOffset(2025, 1, 15, 10, 0, 0, TimeSpan.Zero);
         var dateVar = new DateVariableConfiguration
         {
@@ -39,17 +39,17 @@ public class DateTemplateResolverTests
             Timezone = "UTC"
         };
 
-        // Act
+       
         var result = DateTemplateResolver.ResolveDateVariable(dateVar, baseTime);
 
-        // Assert
-        Assert.Equal("2024-12-16", result);
+       
+        result.ShouldBe("2024-12-16");
     }
 
     [Fact]
     public void ResolveDateVariable_WithMinuteOffset_ReturnsCorrectDate()
     {
-        // Arrange
+       
         var baseTime = new DateTimeOffset(2025, 1, 15, 14, 30, 0, TimeSpan.Zero);
         var dateVar = new DateVariableConfiguration
         {
@@ -59,17 +59,17 @@ public class DateTemplateResolverTests
             Timezone = "UTC"
         };
 
-        // Act
+       
         var result = DateTemplateResolver.ResolveDateVariable(dateVar, baseTime);
 
-        // Assert
-        Assert.Equal("14:15:00", result);
+       
+        result.ShouldBe("14:15:00");
     }
 
     [Fact]
     public void ResolveDateVariable_WithUnixFormat_ReturnsTimestamp()
     {
-        // Arrange
+       
         var baseTime = new DateTimeOffset(2025, 1, 15, 0, 0, 0, TimeSpan.Zero);
         var dateVar = new DateVariableConfiguration
         {
@@ -79,18 +79,18 @@ public class DateTemplateResolverTests
             Timezone = "UTC"
         };
 
-        // Act
+       
         var result = DateTemplateResolver.ResolveDateVariable(dateVar, baseTime);
 
-        // Assert
+       
         var expectedTimestamp = baseTime.ToUnixTimeSeconds().ToString();
-        Assert.Equal(expectedTimestamp, result);
+        result.ShouldBe(expectedTimestamp);
     }
 
     [Fact]
     public void ResolveDateVariable_WithUnixMsFormat_ReturnsTimestampInMilliseconds()
     {
-        // Arrange
+       
         var baseTime = new DateTimeOffset(2025, 1, 15, 0, 0, 0, TimeSpan.Zero);
         var dateVar = new DateVariableConfiguration
         {
@@ -100,18 +100,18 @@ public class DateTemplateResolverTests
             Timezone = "UTC"
         };
 
-        // Act
+       
         var result = DateTemplateResolver.ResolveDateVariable(dateVar, baseTime);
 
-        // Assert
+       
         var expectedTimestamp = baseTime.ToUnixTimeMilliseconds().ToString();
-        Assert.Equal(expectedTimestamp, result);
+        result.ShouldBe(expectedTimestamp);
     }
 
     [Fact]
     public void ResolveDateVariable_WithPositiveOffset_ReturnsFutureDate()
     {
-        // Arrange
+       
         var baseTime = new DateTimeOffset(2025, 1, 15, 10, 0, 0, TimeSpan.Zero);
         var dateVar = new DateVariableConfiguration
         {
@@ -121,17 +121,17 @@ public class DateTemplateResolverTests
             Timezone = "UTC"
         };
 
-        // Act
+       
         var result = DateTemplateResolver.ResolveDateVariable(dateVar, baseTime);
 
-        // Assert
-        Assert.Equal("2025-01-15T12:00:00Z", result);
+       
+        result.ShouldBe("2025-01-15T12:00:00Z");
     }
 
     [Fact]
     public void Resolve_WithMultipleDateVariables_ResolvesAll()
     {
-        // Arrange
+       
         var baseTime = new DateTimeOffset(2025, 1, 15, 15, 0, 0, TimeSpan.Zero);
         var template = "https://api.com/data?start={start_date}&end={end_date}";
         var dateVars = new List<DateVariableConfiguration>
@@ -152,30 +152,30 @@ public class DateTemplateResolverTests
             }
         };
 
-        // Act
+       
         var result = DateTemplateResolver.Resolve(template, dateVars, baseTime);
 
-        // Assert
-        Assert.Equal("https://api.com/data?start=2025-01-14&end=2025-01-15", result);
+       
+        result.ShouldBe("https://api.com/data?start=2025-01-14&end=2025-01-15");
     }
 
     [Fact]
     public void Resolve_WithNoDateVariables_ReturnsOriginalTemplate()
     {
-        // Arrange
+       
         var template = "https://api.com/data";
         
-        // Act
+       
         var result = DateTemplateResolver.Resolve(template, null);
 
-        // Assert
-        Assert.Equal(template, result);
+       
+        result.ShouldBe(template);
     }
 
     [Fact]
     public void Resolve_WithEmptyTemplate_ReturnsEmptyString()
     {
-        // Arrange
+       
         var dateVars = new List<DateVariableConfiguration>
         {
             new()
@@ -186,11 +186,11 @@ public class DateTemplateResolverTests
             }
         };
 
-        // Act
+       
         var result = DateTemplateResolver.Resolve("", dateVars);
 
-        // Assert
-        Assert.Equal("", result);
+       
+        result.ShouldBe("");
     }
 
     [Theory]
@@ -200,7 +200,7 @@ public class DateTemplateResolverTests
     [InlineData("-1d", 86400)]  // 1 day ago (86400 seconds)
     public void ResolveDateVariable_WithVariousOffsets_CalculatesCorrectly(string offset, int expectedSecondsDiff)
     {
-        // Arrange
+       
         var baseTime = new DateTimeOffset(2025, 1, 15, 12, 0, 0, TimeSpan.Zero);
         var dateVar = new DateVariableConfiguration
         {
@@ -210,19 +210,19 @@ public class DateTemplateResolverTests
             Timezone = "UTC"
         };
 
-        // Act
+       
         var result = DateTemplateResolver.ResolveDateVariable(dateVar, baseTime);
         var resultTimestamp = long.Parse(result);
         var expectedTimestamp = baseTime.ToUnixTimeSeconds() - expectedSecondsDiff;
 
-        // Assert
-        Assert.Equal(expectedTimestamp, resultTimestamp);
+       
+        resultTimestamp.ShouldBe(expectedTimestamp);
     }
 
     [Fact]
     public void ValidateDateVariables_WithValidConfigs_ReturnsTrue()
     {
-        // Arrange
+       
         var dateVars = new List<DateVariableConfiguration>
         {
             new()
@@ -241,18 +241,18 @@ public class DateTemplateResolverTests
             }
         };
 
-        // Act
+       
         var isValid = DateTemplateResolver.ValidateDateVariables(dateVars, out var errors);
 
-        // Assert
-        Assert.True(isValid);
-        Assert.Empty(errors);
+       
+        isValid.ShouldBeTrue();
+        errors.ShouldBeEmpty();
     }
 
     [Fact]
     public void ValidateDateVariables_WithInvalidOffset_ReturnsFalse()
     {
-        // Arrange
+       
         var dateVars = new List<DateVariableConfiguration>
         {
             new()
@@ -264,37 +264,37 @@ public class DateTemplateResolverTests
             }
         };
 
-        // Act
+       
         var isValid = DateTemplateResolver.ValidateDateVariables(dateVars, out var errors);
 
-        // Assert
-        Assert.False(isValid);
-        Assert.NotEmpty(errors);
-        Assert.Contains("invalid", errors[0]);
+       
+        isValid.ShouldBeFalse();
+        errors.ShouldNotBeEmpty();
+        errors[0].ShouldContain("invalid");
     }
 
     [Fact]
     public void CreateTimeRangeVariables_CreatesStartAndEndVariables()
     {
-        // Act
+       
         var variables = DateTemplateResolver.CreateTimeRangeVariables(
             startOffsetExpression: "-30d",
             endOffsetExpression: "0",
             format: "yyyy-MM-dd"
         );
 
-        // Assert
-        Assert.Equal(2, variables.Count);
-        Assert.Equal("start_date", variables[0].Name);
-        Assert.Equal("-30d", variables[0].OffsetExpression);
-        Assert.Equal("end_date", variables[1].Name);
-        Assert.Equal("0", variables[1].OffsetExpression);
+       
+        variables.Count.ShouldBe(2);
+        variables[0].Name.ShouldBe("start_date");
+        variables[0].OffsetExpression.ShouldBe("-30d");
+        variables[1].Name.ShouldBe("end_date");
+        variables[1].OffsetExpression.ShouldBe("0");
     }
 
     [Fact]
     public void ResolveDateVariable_WithZeroOffset_ReturnsCurrentTime()
     {
-        // Arrange
+       
         var baseTime = new DateTimeOffset(2025, 1, 15, 14, 30, 45, TimeSpan.Zero);
         var dateVar = new DateVariableConfiguration
         {
@@ -304,17 +304,17 @@ public class DateTemplateResolverTests
             Timezone = "UTC"
         };
 
-        // Act
+       
         var result = DateTemplateResolver.ResolveDateVariable(dateVar, baseTime);
 
-        // Assert
-        Assert.Equal("2025-01-15T14:30:45Z", result);
+       
+        result.ShouldBe("2025-01-15T14:30:45Z");
     }
 
     [Fact]
     public void Resolve_CaseInsensitive_ResolvesVariables()
     {
-        // Arrange
+       
         var baseTime = new DateTimeOffset(2025, 1, 15, 10, 0, 0, TimeSpan.Zero);
         var template = "https://api.com/data?date={LookBack_Date}";  // Mixed case
         var dateVars = new List<DateVariableConfiguration>
@@ -328,10 +328,10 @@ public class DateTemplateResolverTests
             }
         };
 
-        // Act
+       
         var result = DateTemplateResolver.Resolve(template, dateVars, baseTime);
 
-        // Assert
-        Assert.Equal("https://api.com/data?date=2025-01-15", result);
+       
+        result.ShouldBe("https://api.com/data?date=2025-01-15");
     }
 }
