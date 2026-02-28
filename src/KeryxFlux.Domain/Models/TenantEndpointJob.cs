@@ -9,7 +9,7 @@ namespace KeryxFlux.Domain.Models;
 public sealed class TenantEndpointJob
 {
     /// <summary>
-    /// Unique identifier for this job (e.g., "MAIN-Patient")
+    /// Unique identifier for this job (e.g., "ORG_MAIN-Runs")
     /// </summary>
     public required string JobId { get; init; }
 

@@ -3,13 +3,13 @@ using YamlDotNet.Serialization;
 namespace KeryxFlux.Domain.Models.Dockets;
 
 /// <summary>
-/// Represents a tenant/facility in a multi-tenant polling configuration.
+/// Represents a tenant/organization in a multi-tenant polling configuration.
 /// Tenants share the same endpoint configuration but have unique identifiers.
 /// </summary>
 public sealed class TenantConfiguration
 {
     /// <summary>
-    /// Unique identifier for this tenant (e.g., facility code, location ID)
+    /// Unique identifier for this tenant (e.g., organization code, location ID)
     /// </summary>
     [YamlMember(Alias = "tenant_id")]
     public required string TenantId { get; init; }

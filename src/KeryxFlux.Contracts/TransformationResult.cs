@@ -28,7 +28,7 @@ public sealed class TransformationResult
 
     /// <summary>
     /// Additional metadata to attach to the transformed message
-    /// (e.g., extracted patient ID, message type, etc.)
+    /// (e.g., extracted record ID, message type, etc.)
     /// </summary>
     public IReadOnlyDictionary<string, string> Metadata { get; }
 

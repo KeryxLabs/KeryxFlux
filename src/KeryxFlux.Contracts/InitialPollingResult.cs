@@ -64,7 +64,7 @@ public sealed class InitialPollingResult
 public sealed class PollingItem
 {
     /// <summary>
-    /// Unique identifier for this item (e.g., patient ID, order number)
+    /// Unique identifier for this item (e.g., record ID, job number)
     /// Used for correlation and logging.
     /// </summary>
     public required string ItemId { get; init; }
@@ -76,7 +76,7 @@ public sealed class PollingItem
 
     /// <summary>
     /// The first step to execute for this item.
-    /// Example: For patient p1, start with GET /Patient/p1
+    /// Example: For record r1, start with GET /Records/r1
     /// 
     /// Plugin will then decide continuation steps via TransformItemStep:
     /// - ContinueWithSteps([...]) for more steps

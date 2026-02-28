@@ -51,7 +51,7 @@ public sealed class TransformationContext
 
     /// <summary>
     /// Tenant ID if this transformation is part of a multi-tenant workflow.
-    /// Example: facility code, location ID, organization ID
+    /// Example: location code, site ID, organization ID
     /// </summary>
     public string? TenantId { get; init; }
 

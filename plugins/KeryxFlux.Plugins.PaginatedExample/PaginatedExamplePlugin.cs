@@ -47,18 +47,18 @@ public class PaginatedExamplePlugin : IReceiverPlugin
         using var doc = JsonDocument.Parse(payload);
         var root = doc.RootElement;
 
-        var items = new List<PatientData>();
+        var items = new List<RecordData>();
 
         // Handle different response structures
         if (root.TryGetProperty("entry", out var entryArray) && entryArray.ValueKind == JsonValueKind.Array)
         {
-            // FHIR Bundle structure: { "entry": [ { "resource": {...} } ] }
+            // API Bundle structure: { "entry": [ { "resource": {...} } ] }
             foreach (var entry in entryArray.EnumerateArray())
             {
                 if (entry.TryGetProperty("resource", out var resource))
                 {
-                    var patient = ParsePatient(resource);
-                    if (patient != null) items.Add(patient);
+                    var record = ParseRecord(resource);
+                    if (record != null) items.Add(record);
                 }
             }
         }
@@ -67,8 +67,8 @@ public class PaginatedExamplePlugin : IReceiverPlugin
             // Simple structure: { "data": [...] }
             foreach (var item in dataArray.EnumerateArray())
             {
-                var patient = ParsePatient(item);
-                if (patient != null) items.Add(patient);
+                var record = ParseRecord(item);
+                if (record != null) items.Add(record);
             }
         }
         else if (root.ValueKind == JsonValueKind.Array)
@@ -76,15 +76,15 @@ public class PaginatedExamplePlugin : IReceiverPlugin
             // Root is array: [...]
             foreach (var item in root.EnumerateArray())
             {
-                var patient = ParsePatient(item);
-                if (patient != null) items.Add(patient);
+                var record = ParseRecord(item);
+                if (record != null) items.Add(record);
             }
         }
 
         // Transform this page's data
         var transformedPage = new
         {
-            source_system = "epic-fhir",
+            source_system = "ci-platform",
             extracted_at = DateTimeOffset.UtcNow,
             docket_name = context.DocketName,
             environment = context.DocketConfiguration.GetValueOrDefault("environment", "unknown"),
@@ -103,13 +103,13 @@ public class PaginatedExamplePlugin : IReceiverPlugin
             
             // Actual data from this page
             page_item_count = items.Count,
-            patients = items.Select(p => new
+            records = items.Select(r => new
             {
-                patient_id = p.Id,
-                full_name = p.Name,
-                birth_date = p.BirthDate,
-                gender = p.Gender,
-                active = p.Active
+                record_id = r.Id,
+                name = r.Name,
+                created_date = r.CreatedDate,
+                status = r.Status,
+                active = r.Active
             })
         };
 
@@ -118,7 +118,7 @@ public class PaginatedExamplePlugin : IReceiverPlugin
             WriteIndented = true
         });
 
-        Console.WriteLine($"[PaginatedPlugin] Transformed {items.Count} patients from page {paginationCtx.CurrentPage}");
+        Console.WriteLine($"[PaginatedPlugin] Transformed {items.Count} records from page {paginationCtx.CurrentPage}");
 
         return TransformationResult.Success(result, "application/json");
     }
@@ -131,7 +131,7 @@ public class PaginatedExamplePlugin : IReceiverPlugin
         Console.WriteLine($"[PaginatedPlugin] Processing single (non-paginated) request");
 
         using var doc = JsonDocument.Parse(payload);
-        var allItems = new List<PatientData>();
+        var allItems = new List<RecordData>();
 
         // Parse all items from single response
         var root = doc.RootElement;
@@ -139,21 +139,21 @@ public class PaginatedExamplePlugin : IReceiverPlugin
         {
             foreach (var item in dataArray.EnumerateArray())
             {
-                var patient = ParsePatient(item);
-                if (patient != null) allItems.Add(patient);
+                var record = ParseRecord(item);
+                if (record != null) allItems.Add(record);
             }
         }
 
         var transformed = new
         {
-            source_system = "epic-fhir",
+            source_system = "ci-platform",
             extracted_at = DateTimeOffset.UtcNow,
-            total_patients = allItems.Count,
+            total_records = allItems.Count,
             docket_name = context.DocketName,
-            patients = allItems.Select(p => new
+            records = allItems.Select(r => new
             {
-                patient_id = p.Id,
-                full_name = p.Name
+                record_id = r.Id,
+                name = r.Name
             })
         };
 
@@ -161,11 +161,11 @@ public class PaginatedExamplePlugin : IReceiverPlugin
         return TransformationResult.Success(result, "application/json");
     }
 
-    private PatientData? ParsePatient(JsonElement element)
+    private RecordData? ParseRecord(JsonElement element)
     {
         try
         {
-            // Example FHIR Patient parsing
+            // Example API record parsing
             var id = element.TryGetProperty("id", out var idProp) ? idProp.GetString() : null;
             if (string.IsNullOrEmpty(id)) return null;
 
@@ -182,16 +182,16 @@ public class PaginatedExamplePlugin : IReceiverPlugin
                 name = $"{given} {family}".Trim();
             }
 
-            var birthDate = element.TryGetProperty("birthDate", out var bdProp) ? bdProp.GetString() : null;
-            var gender = element.TryGetProperty("gender", out var genderProp) ? genderProp.GetString() : null;
+            var createdDate = element.TryGetProperty("createdDate", out var cdProp) ? cdProp.GetString() : null;
+            var status = element.TryGetProperty("status", out var statusProp) ? statusProp.GetString() : null;
             var active = element.TryGetProperty("active", out var activeProp) && activeProp.GetBoolean();
 
-            return new PatientData
+            return new RecordData
             {
                 Id = id,
                 Name = name,
-                BirthDate = birthDate,
-                Gender = gender,
+                CreatedDate = createdDate,
+                Status = status,
                 Active = active
             };
         }
@@ -201,12 +201,12 @@ public class PaginatedExamplePlugin : IReceiverPlugin
         }
     }
 
-    private class PatientData
+    private class RecordData
     {
         public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-        public string? BirthDate { get; set; }
-        public string? Gender { get; set; }
+        public string? CreatedDate { get; set; }
+        public string? Status { get; set; }
         public bool Active { get; set; }
     }
 }
