@@ -51,17 +51,17 @@ Personal goals for this project:
 ## No Proprietary Information
 
 This project contains:
-- ? Publicly available integration patterns
-- ? Standard software engineering practices  
-- ? Generic infrastructure code
-- ? Open source dependencies
+- Publicly available integration patterns
+- Standard software engineering practices  
+- Generic infrastructure code
+- Open source dependencies
 
 This project does NOT contain:
-- ? Employer-specific business logic
-- ? Proprietary algorithms or trade secrets
-- ? Customer data or configurations
-- ? Industry-specific domain knowledge
-- ? Code derived from employer systems
+- Employer-specific business logic
+- Proprietary algorithms or trade secrets
+- Customer data or configurations
+- Industry-specific domain knowledge
+- Code derived from employer systems
 
 ## Independent Verification
 
@@ -74,11 +74,11 @@ All code in this repository:
 
 ## Open Source Commitment
 
-This project is released under the MIT License to benefit the developer community and demonstrate the author's capabilities.
+This project is released under the Apache-2 License to benefit the developer community and demonstrate the author's capabilities.
 
 ---
 
-**Maintained by:** [Your Name]  
-**License:** MIT  
+**Maintained by:** theeelevators  
+**License:** APACHE-2  
 **Status:** Active Development  
-**Last Updated:** January 31, 2025
+**Last Updated:** February 28, 2026
