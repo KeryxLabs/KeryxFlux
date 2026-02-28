@@ -108,6 +108,24 @@ public sealed class ReceiverConfiguration
     /// </summary>
     [YamlMember(Alias = "enable_auto_commit")]
     public bool? EnableAutoCommit { get; init; } = true;
+    
+    /// <summary>
+    /// gRPC specific: Service endpoint (host:port)
+    /// </summary>
+    [YamlMember(Alias = "grpc_endpoint")]
+    public string? GrpcEndpoint { get; init; }
+    
+    /// <summary>
+    /// gRPC specific: Service name
+    /// </summary>
+    [YamlMember(Alias = "service_name")]
+    public string? ServiceName { get; init; }
+    
+    /// <summary>
+    /// gRPC specific: Use TLS
+    /// </summary>
+    [YamlMember(Alias = "use_tls")]
+    public bool? UseTls { get; init; } = true;
 
     /// <summary>
     /// TCP port (for TCP receivers)

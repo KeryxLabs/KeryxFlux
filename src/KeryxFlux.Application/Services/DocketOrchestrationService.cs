@@ -184,6 +184,28 @@ public class DocketOrchestrationService : IHostedService
                 }
             });
         }
+        // Handle gRPC receivers
+        else if (receiverType == "grpc")
+        {
+            var grpcReceiver = _serviceProvider.GetService<IGrpcReceiverService>();
+            if (grpcReceiver == null)
+            {
+                _logger.LogError("IGrpcReceiverService not registered");
+                return;
+            }
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await grpcReceiver.RegisterReceiverForDocketAsync(docket);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to register gRPC receiver for docket {DocketName}", docket.Name);
+                }
+            });
+        }
         // HTTP receivers don't need explicit registration (handled by ASP.NET endpoints)
         else if (receiverType == "http")
         {
@@ -232,6 +254,23 @@ public class DocketOrchestrationService : IHostedService
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to unregister Kafka consumer for docket {DocketName}", docket.Name);
+                }
+            });
+        }
+        else if (receiverType == "grpc")
+        {
+            var grpcReceiver = _serviceProvider.GetService<IGrpcReceiverService>();
+            if (grpcReceiver == null) return;
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await grpcReceiver.UnregisterReceiverForDocketAsync(docket.Name);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to unregister gRPC receiver for docket {DocketName}", docket.Name);
                 }
             });
         }

@@ -74,6 +74,19 @@ public sealed class DestinationConfiguration
     
     [YamlMember(Alias = "durable")]
     public bool? Durable { get; init; } = true;
+    
+    // gRPC-specific
+    [YamlMember(Alias = "grpc_endpoint")]
+    public string? GrpcEndpoint { get; init; }
+    
+    [YamlMember(Alias = "service_name")]
+    public string? ServiceName { get; init; }
+    
+    [YamlMember(Alias = "method_name")]
+    public string? MethodName { get; init; }
+    
+    [YamlMember(Alias = "use_tls")]
+    public bool? UseTls { get; init; } = true;
 
     // TCP-specific
     [YamlMember(Alias = "host")]

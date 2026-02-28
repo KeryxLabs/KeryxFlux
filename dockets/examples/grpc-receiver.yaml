@@ -1,0 +1,40 @@
+# gRPC Receiver Example - Payment Events
+# Receives payment events via gRPC and processes them
+
+name: grpc-payment-receiver
+version: 1.0.0
+type: receiver
+plugin_location: ./plugins/PaymentProcessor.dll
+
+receiver:
+  type: grpc
+  grpc_endpoint: "localhost:5001"
+  service_name: "PaymentService"
+  use_tls: false  # Set true in production
+
+forwarding:
+  destinations:
+    # Forward to Kafka
+    - name: payment-events
+      type: kafka
+      bootstrap_servers: "localhost:9092"
+      topic: "payment-processed"
+      
+    # Forward to RabbitMQ
+    - name: rabbitmq-audit
+      type: rabbitmq
+      connection_string: "amqp://guest:guest@localhost:5672/"
+      exchange_name: "payments-audit"
+      routing_key: "payment.processed"
+      
+    # Forward to another gRPC service
+    - name: analytics-service
+      type: grpc
+      grpc_endpoint: "localhost:5002"
+      service_name: "AnalyticsService"
+      method_name: "RecordEvent"
+      use_tls: false
+
+telemetry:
+  enabled: true
+  trace_headers: true

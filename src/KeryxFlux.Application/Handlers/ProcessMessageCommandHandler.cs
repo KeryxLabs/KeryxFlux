@@ -133,6 +133,7 @@ public sealed class ProcessMessageCommandHandler : IRequestHandler<ProcessMessag
                     if (!string.IsNullOrEmpty(destination.ExchangeName))
                         headers["exchange_name"] = destination.ExchangeName;
                     
+                    
                     if (!string.IsNullOrEmpty(destination.RoutingKey))
                         headers["routing_key"] = destination.RoutingKey;
                     
@@ -141,6 +142,33 @@ public sealed class ProcessMessageCommandHandler : IRequestHandler<ProcessMessag
                     
                     if (destination.Durable.HasValue)
                         headers["durable"] = destination.Durable.Value.ToString();
+                }
+                // Add Kafka-specific headers
+                else if (destination.Type.Equals("kafka", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.IsNullOrEmpty(destination.BootstrapServers))
+                        headers["bootstrap_servers"] = destination.BootstrapServers;
+                    
+                    if (!string.IsNullOrEmpty(destination.Topic))
+                        headers["topic"] = destination.Topic;
+                    
+                    if (!string.IsNullOrEmpty(destination.PartitionKey))
+                        headers["partition_key"] = destination.PartitionKey;
+                }
+                // Add gRPC-specific headers
+                else if (destination.Type.Equals("grpc", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.IsNullOrEmpty(destination.GrpcEndpoint))
+                        headers["grpc_endpoint"] = destination.GrpcEndpoint;
+                    
+                    if (!string.IsNullOrEmpty(destination.ServiceName))
+                        headers["service_name"] = destination.ServiceName;
+                    
+                    if (!string.IsNullOrEmpty(destination.MethodName))
+                        headers["method_name"] = destination.MethodName;
+                    
+                    if (destination.UseTls.HasValue)
+                        headers["use_tls"] = destination.UseTls.Value.ToString();
                 }
 
                 var outboundMessage = new OutboundMessage
