@@ -1,16 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-<PropertyGroup>
-  <TargetFramework>net8.0</TargetFramework>
-  <ImplicitUsings>enable</ImplicitUsings>
-  <Nullable>enable</Nullable>
-  <RootNamespace>KeryxFlux.Domain</RootNamespace>
-  <Company>KeryxLabs</Company>
-  <Product>KeryxFlux</Product>
-  <Description>Domain models and ports for KeryxFlux data orchestration engine</Description>
-  <Version>0.1.0</Version>
-  <Authors>KeryxLabs Contributors</Authors>
-</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>KeryxFlux.Domain</RootNamespace>
+    <Company>KeryxLabs</Company>
+    <Product>KeryxFlux</Product>
+    <Description>Domain models and ports for KeryxFlux data orchestration engine</Description>
+    <Version>1.0.0</Version>
+    <Authors>KeryxLabs Contributors</Authors>
+    <PackageId>KeryxFlux.Domain</PackageId>
+    <PackageTags>data;orchestration;integration;domain;dotnet</PackageTags>
+    <RepositoryUrl>https://github.com/KeryxLabs/KeryxFlux</RepositoryUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/KeryxLabs/KeryxFlux</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="OneOf" Version="3.0.271" />
