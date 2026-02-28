@@ -1,0 +1,40 @@
+# Kafka Consumer Example - Order Events
+# Consumes order events from Kafka and processes them
+
+name: kafka-order-consumer
+version: 1.0.0
+type: receiver
+plugin_location: ./plugins/OrderParser.dll
+
+receiver:
+  type: kafka
+  bootstrap_servers: "localhost:9092"
+  topic: "order-events"
+  group_id: "keryxflux-order-consumers"
+  auto_offset_reset: "earliest"
+  enable_auto_commit: true
+
+forwarding:
+  destinations:
+    # Forward to another Kafka topic
+    - name: processed-orders
+      type: kafka
+      bootstrap_servers: "localhost:9092"
+      topic: "processed-orders"
+      
+    # Also forward to RabbitMQ
+    - name: rabbitmq-backup
+      type: rabbitmq
+      connection_string: "amqp://guest:guest@localhost:5672/"
+      exchange_name: "orders-backup"
+      routing_key: "order.processed"
+      
+    # And HTTP webhook
+    - name: http-webhook
+      type: http
+      url: "https://api.example.com/webhooks/orders"
+      method: POST
+
+telemetry:
+  enabled: true
+  trace_headers: true

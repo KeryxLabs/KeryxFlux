@@ -9,6 +9,7 @@ using KeryxFlux.Domain.Ports;
 using KeryxFlux.Infrastructure.Receivers;
 using KeryxFlux.Infrastructure.Senders;
 using KeryxFlux.Infrastructure.MessageBrokers.RabbitMq;
+using KeryxFlux.Infrastructure.MessageBrokers.Kafka;
 using KeryxFlux.Host.Extensions;
 using Hangfire;
 using Hangfire.Redis.StackExchange;
@@ -30,9 +31,13 @@ builder.Services.AddSingleton<IDocketManager, DocketManager>();
 builder.Services.AddSingleton<IRabbitMqConnectionService, RabbitMqConnectionService>();
 builder.Services.AddSingleton<IRabbitMqReceiverService, RabbitMqReceiver>(); // Service for managing RabbitMQ consumers
 
+// Register Kafka services
+builder.Services.AddSingleton<IKafkaConsumerService, KafkaConsumer>(); // Service for managing Kafka consumers
+
 // Register senders - looked up by their Type property
 builder.Services.AddSingleton<ISender, HttpSender>();
 builder.Services.AddSingleton<ISender, RabbitMqSender>();
+builder.Services.AddSingleton<ISender, KafkaProducer>();
 
 // Register polling jobs
 builder.Services.AddScoped<IPollJob, TenantEndpointPollJob>();

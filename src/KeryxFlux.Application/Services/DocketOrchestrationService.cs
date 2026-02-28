@@ -162,6 +162,28 @@ public class DocketOrchestrationService : IHostedService
                 }
             });
         }
+        // Handle Kafka consumers
+        else if (receiverType == "kafka")
+        {
+            var kafkaConsumer = _serviceProvider.GetService<IKafkaConsumerService>();
+            if (kafkaConsumer == null)
+            {
+                _logger.LogError("IKafkaConsumerService not registered");
+                return;
+            }
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await kafkaConsumer.RegisterConsumerForDocketAsync(docket);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to register Kafka consumer for docket {DocketName}", docket.Name);
+                }
+            });
+        }
         // HTTP receivers don't need explicit registration (handled by ASP.NET endpoints)
         else if (receiverType == "http")
         {
@@ -193,6 +215,23 @@ public class DocketOrchestrationService : IHostedService
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to unregister RabbitMQ consumer for docket {DocketName}", docket.Name);
+                }
+            });
+        }
+        else if (receiverType == "kafka")
+        {
+            var kafkaConsumer = _serviceProvider.GetService<IKafkaConsumerService>();
+            if (kafkaConsumer == null) return;
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await kafkaConsumer.UnregisterConsumerForDocketAsync(docket.Name);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to unregister Kafka consumer for docket {DocketName}", docket.Name);
                 }
             });
         }

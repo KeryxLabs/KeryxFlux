@@ -78,6 +78,36 @@ public sealed class ReceiverConfiguration
     /// </summary>
     [YamlMember(Alias = "concurrent_consumers")]
     public int? ConcurrentConsumers { get; init; }
+    
+    /// <summary>
+    /// Kafka specific: Topic name
+    /// </summary>
+    [YamlMember(Alias = "topic")]
+    public string? Topic { get; init; }
+    
+    /// <summary>
+    /// Kafka specific: Consumer group ID
+    /// </summary>
+    [YamlMember(Alias = "group_id")]
+    public string? GroupId { get; init; }
+    
+    /// <summary>
+    /// Kafka specific: Bootstrap servers (comma-separated)
+    /// </summary>
+    [YamlMember(Alias = "bootstrap_servers")]
+    public string? BootstrapServers { get; init; }
+    
+    /// <summary>
+    /// Kafka specific: Auto offset reset (earliest, latest)
+    /// </summary>
+    [YamlMember(Alias = "auto_offset_reset")]
+    public string? AutoOffsetReset { get; init; }
+    
+    /// <summary>
+    /// Kafka specific: Enable auto commit
+    /// </summary>
+    [YamlMember(Alias = "enable_auto_commit")]
+    public bool? EnableAutoCommit { get; init; } = true;
 
     /// <summary>
     /// TCP port (for TCP receivers)
