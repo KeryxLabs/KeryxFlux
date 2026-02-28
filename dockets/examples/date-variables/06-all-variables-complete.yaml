@@ -105,19 +105,19 @@ endpoints:
       page_size: 200
       max_pages: 100
       options:
-        offset_param: "_offset"  # Epic-specific parameter name
-        limit_param: "_count"    # Epic-specific parameter name
+        offset_param: "_offset"  # API-specific parameter name
+        limit_param: "_count"    # API-specific parameter name
 
 forwarding:
   destinations:
     - name: data-warehouse
       type: http
-      url: "https://warehouse.internal.com/api/fhir/{resource_type}/{tenant_id}"
+      url: "https://warehouse.example.com/api/ci/{resource_type}/{tenant_id}"
       method: POST
       headers:
         X-Environment: "{environment}"
         X-Region: "{region}"
-        X-Facility: "{facility_code}"
+        X-Location: "{location_code}"
       retry_policy:
         max_attempts: 3
         backoff: exponential
@@ -130,19 +130,19 @@ telemetry:
 # HOW THIS WORKS:
 # ????????????????????????????????????????????????????????????????
 #
-# For MAIN_HOSPITAL + Patient endpoint at 15:00 UTC:
+# For ORG_MAIN + Runs endpoint at 15:00 UTC:
 #
 # Step 1: Resolve DATE variables
 #   {lookback_start} ? 2025-01-15T13:00:00Z (2 hours ago)
 #   {lookback_end}   ? 2025-01-15T15:00:00Z (now)
 #
 # Step 2: Resolve STATIC variables
-#   {fhir_base}   ? https://fhir.epic.com
-#   {tenant_id}   ? MAIN_HOSPITAL
+#   {ci_base}   ? https://api.ci.example
+#   {tenant_id}   ? ORG_MAIN
 #   {api_version} ? R4
 #
 # Step 3: Initial URL
-#   https://fhir.epic.com/MAIN_HOSPITAL/api/FHIR/R4/Patient?_lastUpdated=ge2025-01-15T13:00:00Z&_lastUpdated=le2025-01-15T15:00:00Z
+#   https://api.ci.example/ORG_MAIN/api/v1/Runs?_lastUpdated=ge2025-01-15T13:00:00Z&_lastUpdated=le2025-01-15T15:00:00Z
 #
 # Step 4: Pagination (if needed)
 #   Page 1: (no pagination params - link-header strategy)
@@ -151,19 +151,19 @@ telemetry:
 #   etc.
 #
 # ????????????????????????????????????????????????????????????????
-# For URGENT_CARE_EAST + Observation endpoint at 15:00 UTC:
+# For QUICKSYNC_EAST + Artifacts endpoint at 15:00 UTC:
 #
 # Step 1: Resolve DATE variables (OVERRIDDEN)
 #   {lookback_start} ? 2025-01-15T14:30:00Z (30 min ago - tenant override)
 #   {lookback_end}   ? 2025-01-15T15:00:00Z (now)
 #
 # Step 2: Resolve STATIC variables
-#   {fhir_base}   ? https://fhir.epic.com
-#   {tenant_id}   ? URGENT_CARE_EAST
+#   {ci_base}   ? https://api.ci.example
+#   {tenant_id}   ? QUICKSYNC_EAST
 #   {api_version} ? R4
 #
 # Step 3: Initial URL
-#   https://fhir.epic.com/URGENT_CARE_EAST/api/FHIR/R4/Observation?date=ge2025-01-15T14:30:00Z&date=le2025-01-15T15:00:00Z&category=laboratory
+#   https://api.ci.example/QUICKSYNC_EAST/api/v1/Artifacts?date=ge2025-01-15T14:30:00Z&date=le2025-01-15T15:00:00Z&category=build
 #
 # Step 4: Pagination (offset-limit strategy)
 #   Page 1: ...&_offset=0&_count=200

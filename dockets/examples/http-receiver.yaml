@@ -49,7 +49,7 @@ forwarding:
     - name: audit-stream
       type: kafka
       bootstrap_servers: kafka:9092
-      topic: hl7-audit-log
+      topic: event-audit-log
       partition_key: patient_id
 
 # Telemetry

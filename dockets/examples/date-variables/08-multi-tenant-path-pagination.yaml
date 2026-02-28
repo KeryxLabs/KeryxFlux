@@ -104,10 +104,10 @@ forwarding:
   destinations:
     - name: centralized-warehouse
       type: http
-      url: "https://warehouse.internal.com/api/{tenant_id}/{resource_type}"
+      url: "https://warehouse.example.com/api/{tenant_id}/{resource_type}"
       method: POST
       headers:
-        X-Facility-Code: "{facility_code}"
+        X-Org-Code: "{org_code}"
       retry_policy:
         max_attempts: 3
         backoff: exponential
@@ -119,21 +119,21 @@ telemetry:
 # EXPANDED JOBS (Tenant × Endpoint Matrix):
 # ????????????????????????????????????????????????????????????????
 #
-# Job 1: MAIN_HOSPITAL :: Patient (2-hour lookback)
-#   Page 1: https://api.ehr.com/MAIN_HOSPITAL/resource/Patient/1/100?updated_after=2025-01-15T13:00:00Z
-#   Page 2: https://api.ehr.com/MAIN_HOSPITAL/resource/Patient/2/100?updated_after=2025-01-15T13:00:00Z
+# Job 1: ORG_MAIN :: Runs (2-hour lookback)
+#   Page 1: https://api.ci.example/ORG_MAIN/resource/Runs/1/100?updated_after=2025-01-15T13:00:00Z
+#   Page 2: https://api.ci.example/ORG_MAIN/resource/Runs/2/100?updated_after=2025-01-15T13:00:00Z
 #
-# Job 2: MAIN_HOSPITAL :: Observation (2-hour lookback)
-#   Page 1: https://api.ehr.com/MAIN_HOSPITAL/resource/Observation/1/50?updated_after=2025-01-15T13:00:00Z&category=laboratory
-#   Page 2: https://api.ehr.com/MAIN_HOSPITAL/resource/Observation/2/50?updated_after=2025-01-15T13:00:00Z&category=laboratory
+# Job 2: ORG_MAIN :: Artifacts (2-hour lookback)
+#   Page 1: https://api.ci.example/ORG_MAIN/resource/Artifacts/1/50?updated_after=2025-01-15T13:00:00Z&type=build
+#   Page 2: https://api.ci.example/ORG_MAIN/resource/Artifacts/2/50?updated_after=2025-01-15T13:00:00Z&type=build
 #
-# Job 3: URGENT_CARE :: Patient (30-min lookback - OVERRIDDEN)
-#   Page 1: https://api.ehr.com/URGENT_CARE/resource/Patient/1/100?updated_after=2025-01-15T14:30:00Z
-#   Page 2: https://api.ehr.com/URGENT_CARE/resource/Patient/2/100?updated_after=2025-01-15T14:30:00Z
+# Job 3: QUICKSYNC :: Runs (30-min lookback - OVERRIDDEN)
+#   Page 1: https://api.ci.example/QUICKSYNC/resource/Runs/1/100?updated_after=2025-01-15T14:30:00Z
+#   Page 2: https://api.ci.example/QUICKSYNC/resource/Runs/2/100?updated_after=2025-01-15T14:30:00Z
 #
-# Job 4: URGENT_CARE :: Observation (30-min lookback - OVERRIDDEN)
-#   Page 1: https://api.ehr.com/URGENT_CARE/resource/Observation/1/50?updated_after=2025-01-15T14:30:00Z&category=laboratory
-#   Page 2: https://api.ehr.com/URGENT_CARE/resource/Observation/2/50?updated_after=2025-01-15T14:30:00Z&category=laboratory
+# Job 4: QUICKSYNC :: Artifacts (30-min lookback - OVERRIDDEN)
+#   Page 1: https://api.ci.example/QUICKSYNC/resource/Artifacts/1/50?updated_after=2025-01-15T14:30:00Z&type=build
+#   Page 2: https://api.ci.example/QUICKSYNC/resource/Artifacts/2/50?updated_after=2025-01-15T14:30:00Z&type=build
 #
 # ????????????????????????????????????????????????????????????????
 # KEY POINTS:

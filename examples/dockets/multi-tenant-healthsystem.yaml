@@ -119,7 +119,7 @@ forwarding:
     - name: data-warehouse
       type: http
       # Tenant-specific destination paths
-      url: "https://warehouse.hospital.com/{org_id}/{tenant_id}/{endpoint_id}/data"
+      url: "https://warehouse.example.com/{org_id}/{tenant_id}/{endpoint_id}/data"
       timeout_seconds: 120
 
 telemetry:

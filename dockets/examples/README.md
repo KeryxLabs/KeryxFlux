@@ -5,13 +5,13 @@ This directory contains example docket configurations for KeryxFlux.
 ## Available Examples
 
 ### Receivers (Inbound)
-- **`http-receiver.yaml`** - Receives HL7 messages via HTTP POST
+- **`http-receiver.yaml`** - Receives Event messages via HTTP POST
 - **`rabbitmq-consumer.yaml`** - Consumes orders from RabbitMQ queue
 - **`kafka-consumer.yaml`** - Consumes events from Kafka topic _(coming soon)_
-- **`tcp-receiver.yaml`** - Receives HL7 messages via TCP/MLLP _(coming soon)_
+- **`tcp-receiver.yaml`** - Receives Event messages via TCP/MLLP _(coming soon)_
 
 ### Pollers (Scheduled Outbound)
-- **`poller.yaml`** - Scheduled FHIR patient sync every 15 minutes
+- **`poller.yaml`** - Scheduled API job sync every 15 minutes
 
 ## Using These Examples
 
@@ -48,8 +48,8 @@ Docket files must end with `-docket.yaml` or `-docket.yml` to be automatically d
 **Naming convention:**
 ```
 dockets/
-??? hl7-receiver-docket.yaml       ? Discovered
-??? patient-sync-docket.yml        ? Discovered
+??? Event-receiver-docket.yaml       ? Discovered
+??? job-sync-docket.yml        ? Discovered
 ??? my-config.yaml                 ? Not discovered (missing suffix)
 ??? test-docket.yaml               ? Discovered
 ```

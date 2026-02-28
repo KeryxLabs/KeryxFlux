@@ -16,11 +16,11 @@ scheduler:
   cron_expression: "0 */15 * * * *"
   
   server:
-    name: "FHIR Server with Complex JOBh"
+    name: "CI Server with Complex JOBh"
     # Mix of:
     # - Configuration variables: {org_id}, {org_code}, {resource_type}
     # - Pagination variables: {page_number}, {page_size}
-    address: "https://fhir.example.com/org/{org_id}/facility/{org_code}/{resource_type}/{page_number}/{page_size}"
+    address: "https://api.ci.example/org/{org_id}/location/{org_code}/{resource_type}/{page_number}/{page_size}"
     timeout_seconds: 60
   
   pagination:

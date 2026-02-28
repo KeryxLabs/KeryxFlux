@@ -50,8 +50,8 @@ forwarding:
     - name: run-queue
       type: rabbitmq
       connection_env: RABBITMQ_CONNECTION
-      exchange: patient-updates
-      routing_key: patient.created
+      exchange: ci-updates
+      routing_key: run.created
       persistent: true
       
     - name: backup-storage
