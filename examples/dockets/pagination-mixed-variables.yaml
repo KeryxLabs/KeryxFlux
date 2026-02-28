@@ -1,7 +1,7 @@
-# Mixed: Path Variables + Path Pagination
-# Combines docket configuration variables with pagination path parameters
+# Mixed: JOBh Variables + JOBh Pagination
+# Combines docket configuration variables with pagination JOBh parameters
 
-name: mixed-path-variables-pagination
+name: mixed-JOBh-variables-pagination
 version: 1.0.0
 type: Poller
 
@@ -9,18 +9,18 @@ plugin_location: plugins/KeryxFlux.Plugins.PaginatedExample/bin/Debug/net8.0/Ker
 
 configuration:
   org_id: "ORG456"
-  facility_code: "MAIN"
-  resource_type: "Encounter"
+  org_code: "MAIN"
+  resource_type: "Deployment"
 
 scheduler:
   cron_expression: "0 */15 * * * *"
   
   server:
-    name: "FHIR Server with Complex Path"
+    name: "FHIR Server with Complex JOBh"
     # Mix of:
-    # - Configuration variables: {org_id}, {facility_code}, {resource_type}
+    # - Configuration variables: {org_id}, {org_code}, {resource_type}
     # - Pagination variables: {page_number}, {page_size}
-    address: "https://fhir.hospital.com/org/{org_id}/facility/{facility_code}/{resource_type}/{page_number}/{page_size}"
+    address: "https://fhir.example.com/org/{org_id}/facility/{org_code}/{resource_type}/{page_number}/{page_size}"
     timeout_seconds: 60
   
   pagination:
@@ -29,21 +29,21 @@ scheduler:
     max_pages: 50
     
     options:
-      use_path_parameters: "true"
+      use_JOBh_parameters: "true"
       
       # Pagination placeholders (different names to avoid confusion)
-      page_path_placeholder: "page_number"  # Matches {page_number}
-      page_size_path_placeholder: "page_size"  # Matches {page_size}
+      page_JOBh_placeholder: "page_number"  # Matches {page_number}
+      page_size_JOBh_placeholder: "page_size"  # Matches {page_size}
       
       page_field_name: "page"
       total_pages_field_name: "totalPages"
 
 forwarding:
   destinations:
-    - name: encounter-archive
+    - name: Deployment-archive
       type: http
       # Destination can also use configuration variables
-      url: "https://archive.hospital.com/{org_id}/{facility_code}/encounters"
+      url: "https://archive.example.com/{org_id}/{org_code}/Deployments"
       timeout_seconds: 90
 
 telemetry:

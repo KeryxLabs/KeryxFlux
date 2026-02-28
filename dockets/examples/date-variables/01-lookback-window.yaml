@@ -1,17 +1,17 @@
-# Patient Updates with 1-Hour Lookback
+# CI Run Updates with 1-Hour Lookback
 # 
-# Scenario: Hospital EMR system has occasional delays in updating records.
+# Scenario: CI system has occasional delays in updating run status.
 # We poll every 30 minutes but look back 1 hour to catch any delayed updates.
 #
 # Example:
 # - Current time: 2025-01-15 15:30:00 UTC
 # - Poll runs, looks back to: 2025-01-15 14:30:00 UTC
-# - Gets all patient updates from 14:30 to 15:30 (with some overlap from previous run)
+# - Gets all run updates from 14:30 to 15:30 (with some overlap from previous run)
 
-name: patient-updates-lookback
+name: ci-runs-lookback
 version: 1.0.0
 type: poller
-plugin_location: ./plugins/FhirParser.dll
+plugin_location: ./plugins/DataParser.dll
 
 # Date variable: 1 hour lookback
 date_variables:
@@ -19,20 +19,20 @@ date_variables:
     offset_expression: "-1h"
     format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
     timezone: "UTC"
-    description: "1 hour lookback to catch delayed EMR updates"
+    description: "1 hour lookback to catch delayed updates"
 
 scheduler:
   cron_expression: "*/30 * * * *"  # Every 30 minutes
   queue: default
   server:
-    name: epic-fhir
-    address: "https://fhir.epic.com/api/FHIR/R4/Patient?_lastUpdated=gt{lookback_date}"
+    name: ci-api
+    address: "https://api.ci.example/v1/runs?updated_after={lookback_date}"
     type: http
     authentication:
       type: oauth2
-      token_url: "https://fhir.epic.com/oauth2/token"
-      client_id_env: EPIC_CLIENT_ID
-      client_secret_env: EPIC_CLIENT_SECRET
+      token_url: "https://api.ci.example/oauth2/token"
+      client_id_env: CI_CLIENT_ID
+      client_secret_env: CI_CLIENT_SECRET
     timeout_seconds: 60
 
 pagination:
@@ -44,7 +44,7 @@ forwarding:
   destinations:
     - name: data-warehouse
       type: http
-      url: "https://warehouse.internal.com/api/patients"
+      url: "https://warehouse.example.com/api/runs"
       method: POST
       retry_policy:
         max_attempts: 3

@@ -1,20 +1,20 @@
 # Example HTTP Receiver Docket
-# Receives HL7 messages via HTTP POST and forwards to EHR system
+# Receives webhook events via HTTP POST and forwards to processing system
 
-name: hl7-admission-receiver
+name: webhook-event-receiver
 version: 1.0.0
 type: receiver
-plugin_location: ./plugins/HL7Parser.dll
+plugin_location: ./plugins/EventParser.dll
 
 # HTTP receiver configuration
 receiver:
   type: http
-  endpoint: /receive/hl7-admissions
+  endpoint: /receive/webhooks
   
   authentication:
     type: api_key
     header: X-API-Key
-    secret_env: HL7_API_KEY
+    secret_env: WEBHOOK_API_KEY
   
   rate_limiting:
     enabled: true
@@ -29,9 +29,9 @@ receiver:
 # Forwarding destinations
 forwarding:
   destinations:
-    - name: primary-ehr
+    - name: primary-processor
       type: http
-      url: https://ehr.example.com/api/admissions
+      url: https://processor.example.com/api/events
       method: POST
       
       retry_policy:
@@ -42,7 +42,7 @@ forwarding:
       
       headers:
         Content-Type: application/json
-        Authorization: Bearer ${EHR_TOKEN}
+        Authorization: Bearer ${PROCESSOR_TOKEN}
       
       timeout_seconds: 30
         

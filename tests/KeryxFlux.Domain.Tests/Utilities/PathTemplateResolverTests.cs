@@ -10,18 +10,18 @@ public class PathTemplateResolverTests
     public void Resolve_WithStaticVariables_ResolvesCorrectly()
     {
         // Arrange
-        var template = "/api/{environment}/patients/{tenant_id}";
+        var template = "/api/{environment}/runs/{org_id}";
         var variables = new Dictionary<string, string>
         {
             { "environment", "production" },
-            { "tenant_id", "HOSP001" }
+            { "org_id", "ORG001" }
         };
 
         // Act
         var result = PathTemplateResolver.Resolve(template, variables);
 
         // Assert
-        Assert.Equal("/api/production/patients/HOSP001", result);
+        Assert.Equal("/api/production/runs/ORG001", result);
     }
 
     [Fact]
@@ -29,12 +29,12 @@ public class PathTemplateResolverTests
     {
         // Arrange
         var baseTime = new DateTimeOffset(2025, 1, 15, 15, 0, 0, TimeSpan.Zero);
-        var template = "https://api.ehr.com/{environment}/patients?tenant={tenant_id}&updated_after={lookback_date}";
+        var template = "https://ci.example.com/{environment}/runs?org={org_id}&updated_after={lookback_date}";
         
         var staticVars = new Dictionary<string, string>
         {
             { "environment", "prod" },
-            { "tenant_id", "HOSP001" }
+            { "org_id", "ORG001" }
         };
 
         var dateVars = new List<DateVariableConfiguration>
@@ -52,7 +52,7 @@ public class PathTemplateResolverTests
         var result = PathTemplateResolver.ResolveWithDates(template, staticVars, dateVars, baseTime);
 
         // Assert
-        Assert.Equal("https://api.ehr.com/prod/patients?tenant=HOSP001&updated_after=2025-01-15T14:00:00Z", result);
+        Assert.Equal("https://ci.example.com/prod/runs?org=ORG001&updated_after=2025-01-15T14:00:00Z", result);
     }
 
     [Fact]

@@ -5,14 +5,14 @@
 ### ?? Removed ALL Healthcare References
 
 **Files cleaned:**
-- ? `README.md` - Replaced all FHIR/Epic/patient examples with weather/e-commerce
-- ? `src/KeryxFlux.Cli/README.md` - Replaced patient-sync with product-sync examples
+- ? `README.md` - Replaced all api/platform/job examples with weather/e-commerce
+- ? `src/KeryxFlux.Cli/README.md` - Replaced job-sync with product-sync examples
 - ? Tagline changed from "healthcare interoperability" to "data orchestration framework"
 
 **Healthcare terms removed:**
-- ? Patient, medication, pharmacy
-- ? EMR, EHR, FHIR, HL7
-- ? Epic, hospital, clinical
+- ? job, artifact, storage
+- ? system, processor, api, webhook
+- ? platform, datacenter, operational
 
 **Replaced with:**
 - ? Weather data aggregation
@@ -32,7 +32,7 @@
 ### Files That Need Your Review:
 
 1. **`dockets/examples/`** - Check for any remaining healthcare examples
-2. **`tests/`** - Check test data for patient/medication references
+2. **`tests/`** - Check test data for job/artifact references
 3. **`plugins/`** - Check plugin examples
 4. **Code comments** - Search for inline comments mentioning healthcare
 
@@ -40,7 +40,7 @@
 
 ```powershell
 # Search for remaining healthcare terms
-Get-ChildItem -Recurse -Include *.cs,*.yaml,*.md | Select-String -Pattern "patient|medication|pharmacy|hospital|clinical|fhir|epic" -SimpleMatch
+Get-ChildItem -Recurse -Include *.cs,*.yaml,*.md | Select-String -Pattern "job|artifact|storage|datacenter|operational|api|platform" -SimpleMatch
 
 # Review results and replace if needed
 ```

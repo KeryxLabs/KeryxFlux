@@ -1,43 +1,43 @@
-# Path-Based Pagination Example
-# Epic Medications API with pagination in the URL path
+# JOBh-Based Pagination Example
+# CI Artifacts API with pagination in the URL JOBh
 
-name: epic-medications-path-pagination
+name: CI-Artifacts-JOBh-pagination
 version: 1.0.0
 type: Poller
 
 plugin_location: plugins/KeryxFlux.Plugins.PaginatedExample/bin/Debug/net8.0/KeryxFlux.Plugins.PaginatedExample.dll
 
 configuration:
-  patient_id: "PAT123456"
+  Job_id: "JOBJOB123456"
   environment: "sandbox"
 
 scheduler:
   cron_expression: "0 */30 * * * *"  # Every 30 minutes
   
   server:
-    name: "Epic Medications API"
-    # URL with path placeholders: {page} and {size}
-    # Will become: /Medications/PAT123456/1/50, /Medications/PAT123456/2/50, etc.
-    address: "https://fhir.epic.com/Medications/{patient_id}/{page}/{size}"
+    name: "CI Artifacts API"
+    # URL with JOBh placeholders: {page} and {size}
+    # Will become: /Artifacts/JOBJOB123456/1/50, /Artifacts/JOBJOB123456/2/50, etc.
+    address: "https://api.ci.example/Artifacts/{Job_id}/{page}/{size}"
     timeout_seconds: 60
     
     authentication:
       type: "bearer"
-      secret_env: "EPIC_ACCESS_TOKEN"
+      secret_env: "CI_ACCESS_TOKEN"
   
-  # Path-based pagination configuration
+  # JOBh-based pagination configuration
   pagination:
     strategy: "offset-limit"
     page_size: 50
     max_pages: 20
     
     options:
-      # Enable path-based pagination
-      use_path_parameters: "true"
+      # Enable JOBh-based pagination
+      use_JOBh_parameters: "true"
       
-      # Path placeholders (must match server URL)
-      page_path_placeholder: "page"  # Matches {page} in URL
-      page_size_path_placeholder: "size"  # Matches {size} in URL
+      # JOBh placeholders (must match server URL)
+      page_JOBh_placeholder: "page"  # Matches {page} in URL
+      page_size_JOBh_placeholder: "size"  # Matches {size} in URL
       
       # Response field names
       page_field_name: "page"
@@ -49,7 +49,7 @@ scheduler:
 
 forwarding:
   destinations:
-    - name: medications-db
+    - name: Artifacts-db
       type: http
       url: "https://httpbin.org/post"
       timeout_seconds: 60

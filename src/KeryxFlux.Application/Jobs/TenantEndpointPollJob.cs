@@ -41,7 +41,7 @@ public sealed class TenantEndpointPollJob : IPollJob
 
         try
         {
-            // Parse job ID: "healthsystem-multi-tenant::MAIN-Patient"
+            // Parse job ID: "runningsystem-multi-tenant::MAIN-Tentant"
             var parts = jobId.Split("::");
             if (parts.Length != 2)
             {

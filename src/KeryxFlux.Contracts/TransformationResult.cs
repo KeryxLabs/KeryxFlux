@@ -17,7 +17,7 @@ public sealed class TransformationResult
     public byte[]? Data { get; }
 
     /// <summary>
-    /// Content type of the transformed data (e.g., "application/json", "application/hl7-v2")
+    /// Content type of the transformed data (e.g., "application/json", "text/plain")
     /// </summary>
     public string? ContentType { get; }
 

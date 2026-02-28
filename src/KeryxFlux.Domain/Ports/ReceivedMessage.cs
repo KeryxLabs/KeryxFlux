@@ -11,7 +11,7 @@ public sealed class ReceivedMessage
     public required byte[] Payload { get; init; }
 
     /// <summary>
-    /// Content type if known (e.g., "application/json", "application/hl7-v2")
+    /// Content type if known (e.g., "application/json", "text/plain")
     /// </summary>
     public string? ContentType { get; init; }
 

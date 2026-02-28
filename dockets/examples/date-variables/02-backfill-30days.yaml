@@ -1,9 +1,9 @@
-# 30-Day Backfill for Patient Data
+# 30-Day Backfill for CI Run Data
 #
-# Scenario: Major EMR system issue was fixed. Need to backfill 30 days of patient updates
+# Scenario: CI system issue was fixed. Need to backfill 30 days of run updates
 # that were missed during the outage.
 #
-# This docket retrieves all patient records updated in the last 30 days.
+# This docket retrieves all run records updated in the last 30 days.
 # Use pagination to handle large result sets.
 #
 # Example:
@@ -11,10 +11,10 @@
 # - Backfill start: 2024-12-16 10:00:00 UTC (30 days ago)
 # - Backfill end: 2025-01-15 10:00:00 UTC (now)
 
-name: patient-backfill-30days
+name: ci-runs-backfill-30days
 version: 1.0.0
 type: poller
-plugin_location: ./plugins/FhirParser.dll
+plugin_location: ./plugins/DataParser.dll
 
 # Date variables: 30-day time range
 date_variables:
@@ -35,14 +35,14 @@ scheduler:
   cron_expression: "0 2 * * SAT"  # Saturdays at 2 AM (for weekly backfills)
   queue: backfill
   server:
-    name: epic-fhir-backfill
-    address: "https://fhir.epic.com/api/FHIR/R4/Patient?_lastUpdated=ge{backfill_start}&_lastUpdated=le{backfill_end}"
+    name: ci-api-backfill
+    address: "https://api.ci.example/v1/runs?updated_after={backfill_start}&updated_before={backfill_end}"
     type: http
     authentication:
       type: oauth2
-      token_url: "https://fhir.epic.com/oauth2/token"
-      client_id_env: EPIC_CLIENT_ID
-      client_secret_env: EPIC_CLIENT_SECRET
+      token_url: "https://api.ci.example/oauth2/token"
+      client_id_env: CI_CLIENT_ID
+      client_secret_env: CI_CLIENT_SECRET
     timeout_seconds: 120
 
 # Critical for backfill: handle large result sets
@@ -55,10 +55,10 @@ forwarding:
   destinations:
     - name: backfill-storage
       type: http
-      url: "https://warehouse.internal.com/api/backfill/patients"
+      url: "https://warehouse.example.com/api/backfill/runs"
       method: POST
       headers:
-        X-Backfill-Job: "patient-30day-backfill"
+        X-Backfill-Job: "ci-runs-30day-backfill"
       retry_policy:
         max_attempts: 5
         backoff: exponential

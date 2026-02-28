@@ -156,13 +156,13 @@ keryxflux --version
 keryxflux validate ./dockets
 
 # Preview variable resolution
-keryxflux preview patient-sync.yaml
+keryxflux preview run-sync.yaml
 
 # Create new docket from template
 keryxflux create poller -n "my-poller" -o ./dockets
 
 # Debug configuration
-keryxflux debug patient-sync.yaml
+keryxflux debug run-sync.yaml
 ```  
 
 ### Features
@@ -181,15 +181,15 @@ keryxflux debug patient-sync.yaml
 ### Docket Example (HTTP Receiver)
 
 ```yaml
-# dockets/hl7-receiver.yaml
-name: hl7-admission-receiver
+# dockets/webhook-receiver.yaml
+name: webhook-event-receiver
 version: 1.0.0
 type: receiver
 plugin_location: ./plugins/HL7Parser.dll
 
 receiver:
   type: http
-  endpoint: /receive/hl7-admissions
+  endpoint: /receive/webhooks
   authentication:
     type: api_key
     header: X-API-Key
@@ -197,9 +197,9 @@ receiver:
 
 forwarding:
   destinations:
-    - name: ehr-system
+    - name: processor-system
       type: http
-      url: https://ehr.example.com/api/admissions
+      url: https://processor.example.com/api/events
       method: POST
       retry_policy:
         max_attempts: 3
@@ -255,12 +255,12 @@ scheduler:
   cron_expression: "*/30 * * * *"  # Poll every 30 minutes
   queue: default
   server:
-    name: epic-fhir
+    name: ci-api
       # Dynamic URL with date variable
       address: "https://api.weather.com/history?since={lookback_date}"
     authentication:
       type: oauth2
-      token_url: https://oauth.epic.com/token
+      token_url: https://api.ci.example/oauth/token
       client_id_env: EPIC_CLIENT_ID
       client_secret_env: EPIC_SECRET
 
@@ -310,7 +310,7 @@ Compile to `.dll` and place in the `plugins/` directory.
 
 ## Related Projects
 
-- **[KeryxPars](https://github.com/keryxlabs/KeryxPars)**: Interface message parsing library (HL7, FHIR, X12)
+- **[KeryxPars**: Interface message parsing library)
 - Use KeryxPars inside KeryxFlux plugins for robust message parsing
 
 ---

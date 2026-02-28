@@ -3,9 +3,9 @@
 # Demonstrates non-standard pagination where page parameters are in the URL path
 # instead of query parameters.
 #
-# API Pattern: /resource/{tenant_id}/{page_number}/{page_size}?filters
+# API Pattern: /resource/{org_id}/{page_number}/{page_size}?filters
 #
-# Example: https://api.ehr.com/Patients/GetLatest/HOSP001/1/50?since=2025-01-15T14:00:00Z
+# Example: https://api.ci.example/Jobs/GetLatest/ORG001/1/50?since=2025-01-15T14:00:00Z
 
 name: path-based-pagination-example
 version: 1.0.0
@@ -17,9 +17,9 @@ plugin_location: ./plugins/JsonParser.dll
 # ????????????????????????????????????????????????????????????????
 configuration:
   environment: production
-  api_base: "https://api.ehr.com"
+  api_base: "https://api.ci.example"
   # These are static and don't change per page
-  patient_id: "12345"
+  job_id: "12345"
   page_size: "50"
 
 # ????????????????????????????????????????????????????????????????
@@ -42,7 +42,7 @@ scheduler:
     name: legacy-api
     # Path includes both static variables AND pagination placeholder
     # {page_number} will be handled by pagination strategy
-    address: "{api_base}/Patients/GetLatest/{patient_id}/{page_number}/{page_size}?since={lookback_date}"
+    address: "{api_base}/Jobs/GetLatest/{job_id}/{page_number}/{page_size}?since={lookback_date}"
     authentication:
       type: api_key
       header: X-API-Key
@@ -67,7 +67,7 @@ forwarding:
   destinations:
     - name: data-warehouse
       type: http
-      url: "https://warehouse.internal.com/api/patients/{patient_id}"
+      url: "https://warehouse.example.com/api/jobs/{job_id}"
       method: POST
       retry_policy:
         max_attempts: 3
@@ -86,8 +86,8 @@ telemetry:
 #   {lookback_date} ? 2025-01-14T02:00:00Z (24 hours ago)
 #
 # Step 2: Resolve STATIC variables
-#   {api_base}    ? https://api.ehr.com
-#   {patient_id}  ? 12345
+#   {api_base}    ? https://api.ci.example
+#   {job_id}      ? 12345
 #   {page_size}   ? 50
 #
 # Step 3: Pagination strategy handles {page_number}
@@ -97,8 +97,8 @@ telemetry:
 #   etc.
 #
 # Final URLs:
-#   Page 1: https://api.ehr.com/Patients/GetLatest/12345/1/50?since=2025-01-14T02:00:00Z
-#   Page 2: https://api.ehr.com/Patients/GetLatest/12345/2/50?since=2025-01-14T02:00:00Z
-#   Page 3: https://api.ehr.com/Patients/GetLatest/12345/3/50?since=2025-01-14T02:00:00Z
+#   Page 1: https://api.ci.example/Jobs/GetLatest/12345/1/50?since=2025-01-14T02:00:00Z
+#   Page 2: https://api.ci.example/Jobs/GetLatest/12345/2/50?since=2025-01-14T02:00:00Z
+#   Page 3: https://api.ci.example/Jobs/GetLatest/12345/3/50?since=2025-01-14T02:00:00Z
 #
 # ????????????????????????????????????????????????????????????????

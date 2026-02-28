@@ -1,10 +1,10 @@
 # Example Scheduled Poller Docket
-# Polls FHIR server every 15 minutes for new patients
+# Polls CI API every 15 minutes for new run data
 
-name: patient-sync-poller
+name: ci-runs-poller
 version: 1.0.0
 type: poller
-plugin_location: ./plugins/FhirParser.dll
+plugin_location: ./plugins/DataParser.dll
 
 # Scheduling configuration
 scheduler:
@@ -16,18 +16,18 @@ scheduler:
 
 # Source server configuration
 server_information:
-  name: epic-fhir
-  address: https://fhir.epic.com
+  name: ci-api
+  address: https://api.ci.example
   port: 443
   communication_type: http
   timeout_seconds: 30
   
   authentication:
     type: oauth2
-    token_url: https://oauth.epic.com/token
-    client_id_env: EPIC_CLIENT_ID
-    client_secret_env: EPIC_CLIENT_SECRET
-    scope: "patient/*.read"
+    token_url: https://api.ci.example/oauth/token
+    client_id_env: CI_CLIENT_ID
+    client_secret_env: CI_CLIENT_SECRET
+    scope: "runs:read"
     
   retry_policy:
     max_attempts: 3
@@ -35,8 +35,8 @@ server_information:
 
 # Endpoints to poll
 endpoints:
-  - name: recent-patients
-    path: /Patient?_lastUpdated=gt{last_run_time}
+  - name: recent-runs
+    path: /v1/runs?updated_after={last_run_time}
     max_attempts: 3
     is_cached: true
     cached_property: last_run_time
@@ -47,7 +47,7 @@ endpoints:
 # Forwarding configuration
 forwarding:
   destinations:
-    - name: patient-queue
+    - name: run-queue
       type: rabbitmq
       connection_env: RABBITMQ_CONNECTION
       exchange: patient-updates

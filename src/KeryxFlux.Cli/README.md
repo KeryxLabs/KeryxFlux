@@ -127,7 +127,7 @@ Generate new docket files from built-in templates:
 
 ```bash
 # Create poller docket
-keryxflux create poller -n "patient-sync" -o ./dockets
+keryxflux create poller -n "run-sync" -o ./dockets
 
 # Create listener docket
 keryxflux create listener -n "event-processor"
@@ -143,12 +143,12 @@ keryxflux create webhook -n "order-webhook"
 
 **Output:**
 ```
-? Created docket: ./dockets/patient-sync.yaml
+? Created docket: ./dockets/run-sync.yaml
 
 Next steps:
-  1. Edit the docket: ./dockets/patient-sync.yaml
-  2. Validate: keryxflux validate ./dockets/patient-sync.yaml
-  3. Preview: keryxflux preview ./dockets/patient-sync.yaml
+  1. Edit the docket: ./dockets/run-sync.yaml
+  2. Validate: keryxflux validate ./dockets/run-sync.yaml
+  3. Preview: keryxflux preview ./dockets/run-sync.yaml
 ```
 
 ### Debug Docket Configuration
@@ -318,17 +318,18 @@ keryxflux preview backfill-30days.yaml --at "2025-01-01T00:00:00Z"
 ### Create & Validate New Docket
 
 ```bash
+
 # Create new poller
-keryxflux create poller -n "observation-sync" -o ./dockets
+keryxflux create poller -n "artifact-sync" -o ./dockets
 
 # Edit the generated file
-nano ./dockets/observation-sync.yaml
+nano ./dockets/artifact-sync.yaml
 
 # Validate
-keryxflux validate ./dockets/observation-sync.yaml -v
+keryxflux validate ./dockets/artifact-sync.yaml -v
 
 # Preview with current time
-keryxflux preview ./dockets/observation-sync.yaml
+keryxflux preview ./dockets/artifact-sync.yaml
 ```
 
 ## Development

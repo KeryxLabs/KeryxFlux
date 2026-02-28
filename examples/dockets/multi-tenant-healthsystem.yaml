@@ -1,66 +1,66 @@
-# Multi-Tenant Health System Integration
-# ONE docket handles ALL facilities and endpoints!
+# Multi-Organization CI System Integration
+# ONE docket handles ALL organizations and endpoints!
 
-name: healthsystem-multi-tenant
+name: ci-system-multi-org
 version: 1.0.0
 type: Poller
 
 plugin_location: plugins/KeryxFlux.Plugins.PaginatedExample/bin/Debug/net8.0/KeryxFlux.Plugins.PaginatedExample.dll
 
-# Base configuration shared across ALL tenants/endpoints
+# Base configuration shared across ALL orgs/endpoints
 base_configuration:
-  org_id: "HS-ORG-001"
+  org_id: "CI-ORG-001"
   environment: "production"
-  api_version: "R4"
-  system_name: "Epic"
+  api_version: "v1"
+  system_name: "CI-Platform"
 
-# Server template (variables resolved per tenant/endpoint)
+# Server template (variables resolved per org/endpoint)
 scheduler:
-  # Default cron for all tenant/endpoint combinations
+  # Default cron for all org/endpoint combinations
   cron_expression: "0 */30 * * * *"  # Every 30 minutes
   
   server:
-    name: "Epic FHIR Server"
+    name: "CI API Server"
     # Path template with variables: {org_id}, {tenant_id}, {endpoint_id}
-    address: "https://fhir.hospital.com/org/{org_id}/facility/{tenant_id}/{endpoint_id}"
+    address: "https://api.ci.example/org/{org_id}/location/{tenant_id}/{endpoint_id}"
     timeout_seconds: 60
     
     authentication:
       type: "bearer"
-      secret_env: "EPIC_FHIR_TOKEN"
+      secret_env: "CI_API_TOKEN"
 
-# List of facilities to poll (tenants)
+# List of organizations to poll (tenants)
 tenants:
   - tenant_id: "MAIN"
-    display_name: "Main Campus Hospital"
+    display_name: "Main Datacenter"
     configuration:
       region: "North"
       priority: "high"
       
   - tenant_id: "WEST"
-    display_name: "West Campus Clinic"
+    display_name: "West Cloud Region"
     configuration:
       region: "South"
       priority: "medium"
       
   - tenant_id: "EAST"
-    display_name: "East Campus Medical Center"
+    display_name: "East Edge Location"
     configuration:
       region: "East"
       priority: "high"
-    # Override cron for this facility (hourly instead of 30 min)
+    # Override cron for this location (hourly instead of 30 min)
     cron_expression: "0 0 * * * *"
     
   - tenant_id: "NORTH"
-    display_name: "North Urgent Care"
+    display_name: "North Backup Site"
     configuration:
       region: "North"
       priority: "low"
 
 # List of endpoints to poll for each tenant
 endpoints:
-  - endpoint_id: "Patient"
-    display_name: "Patient Demographics"
+  - endpoint_id: "Runs"
+    display_name: "CI Runs"
     pagination:
       strategy: "offset-limit"
       page_size: 100
@@ -68,8 +68,8 @@ endpoints:
       options:
         use_path_parameters: "false"
         
-  - endpoint_id: "Medication"
-    display_name: "Medication Orders"
+  - endpoint_id: "Artifacts"
+    display_name: "Build Artifacts"
     pagination:
       strategy: "cursor"
       page_size: 50
@@ -78,8 +78,8 @@ endpoints:
         paging_object_path: "link"
         next_cursor_field_name: "next"
         
-  - endpoint_id: "Encounter"
-    display_name: "Patient Encounters"
+  - endpoint_id: "Deployments"
+    display_name: "Deployment Records"
     pagination:
       strategy: "offset-limit"
       page_size: 200
@@ -87,17 +87,17 @@ endpoints:
 
 # Overrides for specific tenant/endpoint combinations
 overrides:
-  # WEST facility doesn't have Medication endpoint
+  # WEST location doesn't have Artifacts endpoint
   - tenant_id: "WEST"
-    endpoint_id: "Medication"
+    endpoint_id: "Artifacts"
     enabled: false
     
-  # MAIN campus has VIP patient handling with different pagination
+  # MAIN datacenter has priority handling with different pagination
   - tenant_id: "MAIN"
-    endpoint_id: "Patient"
+    endpoint_id: "Runs"
     configuration:
-      vip_facility: "true"
-      patient_filter: "status=active"
+      priority_location: "true"
+      run_filter: "status=active"
     pagination:
       page_size: 50  # Smaller batches for VIP patients
       max_pages: 30

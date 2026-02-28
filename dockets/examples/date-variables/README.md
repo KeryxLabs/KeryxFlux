@@ -57,10 +57,10 @@ Common formats:
 
 ### 1. Lookback Window (1 hour)
 
-**Use Case**: Poll every 30 minutes, but look back 1 hour to catch delayed updates
+**Use Case**: Poll every 30 minutes, but look back 1 hour to catch delayed updates to CI runs
 
 ```yaml
-name: patient-updates-lookback
+name: ci-updates-lookback
 version: 1.0.0
 type: poller
 
@@ -68,26 +68,26 @@ date_variables:
   - name: lookback_date
     offset_expression: "-1h"
     format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
-    description: "1 hour lookback for delayed EMR updates"
+    description: "1 hour lookback for delayed updates"
 
 scheduler:
   cron_expression: "*/30 * * * *"  # Every 30 minutes
   server:
-    name: ehr-api
-    address: "https://api.ehr.com/patients?updated_after={lookback_date}"
+    name: ci-api
+    address: "https://api.ci.example/runs?updated_after={lookback_date}"
 ```
 
 **Result** (if current time is 2025-01-15 15:30:00 UTC):
 ```
-https://api.ehr.com/patients?updated_after=2025-01-15T14:30:00Z
+https://api.ci.example/runs?updated_after=2025-01-15T14:30:00Z
 ```
 
 ### 2. Time Range Query
 
-**Use Case**: Get data between start and end dates
+**Use Case**: Get runs between start and end dates
 
 ```yaml
-name: patient-time-range
+name: run-time-range
 version: 1.0.0
 type: poller
 
@@ -102,20 +102,20 @@ date_variables:
 scheduler:
   cron_expression: "0 2 * * *"  # Daily at 2 AM
   server:
-    address: "https://api.ehr.com/patients?from={start_date}&to={end_date}"
+    address: "https://api.ci.example/runs?from={start_date}&to={end_date}"
 ```
 
 **Result** (if current time is 2025-01-16 02:00:00 UTC):
 ```
-https://api.ehr.com/patients?from=2025-01-15&to=2025-01-16
+https://api.ci.example/runs?from=2025-01-15&to=2025-01-16
 ```
 
 ### 3. Backfill Scenario (30 days)
 
-**Use Case**: One-time backfill of 30 days of historical data
+**Use Case**: One-time backfill of 30 days of historical run data
 
 ```yaml
-name: patient-backfill-30days
+name: runs-backfill-30days
 version: 1.0.0
 type: poller
 
@@ -132,7 +132,7 @@ date_variables:
 scheduler:
   cron_expression: "0 0 * * *"  # Manual trigger or daily
   server:
-    address: "https://api.ehr.com/patients?start={backfill_start}&end={backfill_end}"
+    address: "https://api.ci.example/runs?start={backfill_start}&end={backfill_end}"
 
 pagination:
   strategy: "offset-limit"
@@ -142,15 +142,15 @@ pagination:
 
 **Result** (if current time is 2025-01-15 10:00:00 UTC):
 ```
-https://api.ehr.com/patients?start=2024-12-16T10:00:00Z&end=2025-01-15T10:00:00Z
+https://api.ci.example/runs?start=2024-12-16T10:00:00Z&end=2025-01-15T10:00:00Z
 ```
 
-### 4. Multi-Tenant with Different Lookback Windows
+### 4. Multi-Organization with Different Lookback Windows
 
-**Use Case**: Different facilities have different data delay characteristics
+**Use Case**: Different organizations have different data delay characteristics
 
 ```yaml
-name: multi-facility-sync
+name: multi-org-sync
 version: 1.0.0
 type: poller
 
@@ -163,32 +163,32 @@ date_variables:
 scheduler:
   cron_expression: "*/30 * * * *"
 
-tenants:
-  - tenant_id: main_hospital
+orgs:
+  - org_id: org_main
     enabled: true
     # Uses default 1-hour lookback
     
-  - tenant_id: rural_clinic
+  - org_id: edge_org
     enabled: true
-    # Override: This clinic has 4-hour delays in EMR updates
+    # Override: This org has 4-hour delays in updates
     date_variables:
       - name: lookback_date
         offset_expression: "-4h"
         format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
         
-  - tenant_id: urgent_care
+  - org_id: quicksync
     enabled: true
-    # Override: Urgent care syncs every 15 minutes
+    # Override: quicksync runs every 15 minutes
     cron_expression: "*/15 * * * *"
     date_variables:
       - name: lookback_date
         offset_expression: "-30m"
         format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
-
+ 
 endpoints:
-  - endpoint_id: Patient
+  - endpoint_id: Runs
     configuration:
-      base_url: "https://fhir.epic.com/{tenant_id}/Patient?_lastUpdated=gt{lookback_date}"
+      base_url: "https://api.ci.example/{org_id}/runs?updated_since={lookback_date}"
 ```
 
 ### 5. Combining Static and Date Variables
@@ -213,12 +213,12 @@ scheduler:
   cron_expression: "0 * * * *"  # Hourly
   server:
     # Both types of variables in the URL
-    address: "https://api.ehr.com/{environment}/{api_version}/changes?since={since_date}"
+    address: "https://api.ci.example/{environment}/{api_version}/changes?since={since_date}"
 ```
 
 **Result**:
 ```
-https://api.ehr.com/prod/v2/changes?since=2025-01-15T12:00:00Z
+https://api.ci.example/prod/v2/changes?since=2025-01-15T12:00:00Z
 ```
 
 ### 6. Unix Timestamp Format
@@ -262,7 +262,7 @@ type: poller
 # 1. Static variables
 configuration:
   environment: prod
-  tenant_id: HOSP001
+  org_id: ORG001
 
 # 2. Date variables
 date_variables:
@@ -273,7 +273,7 @@ date_variables:
 scheduler:
   server:
     # Uses static + date variables
-    address: "https://api.ehr.com/{environment}/patients?tenant={tenant_id}&since={lookback_date}"
+    address: "https://api.ci.example/{environment}/runs?org={org_id}&since={lookback_date}"
 
 # 3. Pagination variables (handled by strategy)
 pagination:
@@ -282,7 +282,7 @@ pagination:
   # Adds: &offset=0&limit=100, &offset=100&limit=100, etc.
 ```
 
-**Resolution order**: Date variables ? Static variables ? Pagination variables
+**Resolution order**: Date variables -> Static variables -> Pagination variables
 
 See [`06-all-variables-complete.yaml`](./06-all-variables-complete.yaml) for a comprehensive example.
 
@@ -292,7 +292,7 @@ For production systems, you might want to track the last successful sync time:
 
 ```yaml
 # Future enhancement: state management
-name: incremental-patient-sync
+name: incremental-run-sync
 version: 1.0.0
 type: poller
 
@@ -300,11 +300,11 @@ date_variables:
   - name: last_sync
     offset_expression: "-1h"  # Fallback if no state exists
     format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
-    # Future: state_key: "last_patient_sync_time"
+    # Future: state_key: "last_run_sync_time"
 
 scheduler:
   server:
-    address: "https://api.ehr.com/patients?updated_after={last_sync}"
+    address: "https://api.ci.example/runs?updated_after={last_sync}"
 ```
 
 ### Time Zone Handling

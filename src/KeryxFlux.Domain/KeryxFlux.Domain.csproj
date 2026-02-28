@@ -5,11 +5,11 @@
   <ImplicitUsings>enable</ImplicitUsings>
   <Nullable>enable</Nullable>
   <RootNamespace>KeryxFlux.Domain</RootNamespace>
-  <Company>KeryxHealth</Company>
+  <Company>KeryxLabs</Company>
   <Product>KeryxFlux</Product>
-  <Description>Domain models and ports for KeryxFlux interoperability engine</Description>
+  <Description>Domain models and ports for KeryxFlux data orchestration engine</Description>
   <Version>0.1.0</Version>
-  <Authors>KeryxHealth Contributors</Authors>
+  <Authors>KeryxLabs Contributors</Authors>
 </PropertyGroup>
 
   <ItemGroup>

@@ -8,8 +8,8 @@ This directory contains example configurations and usage patterns for KeryxFlux.
 examples/
 ??? dockets/              # Example docket YAML configurations
 ?   ??? sample-receiver.yaml
-?   ??? hl7-to-fhir.yaml
-?   ??? epic-patient-poller.yaml
+?   ??? webhook-transformer.yaml
+?   ??? ci-job-poller.yaml
 ??? plugins/              # Example plugin implementations
 ??? scripts/              # Helper scripts for testing
 ```
@@ -50,17 +50,17 @@ curl -X POST http://localhost:5000/receive/sample \
   -d '{"test": "data"}'
 ```
 
-### HL7 to FHIR Transformer (`hl7-to-fhir.yaml`)
+### Webhook Event Transformer
 
-Receives HL7 v2 messages and transforms them to FHIR resources.
+Receives webhook events and transforms them for processing.
 
-**Use case:** Integration with legacy HL7 v2 systems
+**Use case:** Integration with webhook-based systems
 
-### Epic Patient Poller (`epic-patient-poller.yaml`)
+### CI Job Poller
 
-Polls Epic's FHIR API for patient updates and forwards to downstream systems.
+Polls CI API for job updates and forwards to downstream systems.
 
-**Use case:** Scheduled patient data synchronization
+**Use case:** Scheduled job data synchronization
 
 ## Creating Your Own Docket
 

@@ -19,7 +19,7 @@ public sealed class TenantEndpointJob
     public required string DocketName { get; init; }
 
     /// <summary>
-    /// Tenant ID (facility code, location, etc.)
+    /// Tenant ID (organization identifier)
     /// </summary>
     public required string TenantId { get; init; }
 

@@ -3,7 +3,7 @@ version: 1.0.0
 type: Receiver
 
 # Plugin configuration
-plugin_location: "D:\\Health\\KeryxFlux\\plugins\\KeryxFlux.Plugins.SampleReceiver.dll"
+plugin_location: "./KeryxFlux.Plugins.SampleReceiver.dll"
 
 # Receiver configuration
 receiver:
@@ -15,7 +15,7 @@ forwarding:
   destinations:
     - name: webhook-site
       type: http
-      url: https://webhook.site/f0cc3e5d-6e74-4b0b-83e6-eb9abb14ee3d # Replace with your webhook.site URL
+      url: https://webhook.example.com/ingest # example destination
       timeout_seconds: 30
 
 # Telemetry (optional)

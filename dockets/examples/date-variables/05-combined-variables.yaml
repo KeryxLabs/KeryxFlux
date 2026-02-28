@@ -4,10 +4,10 @@
 # Demonstrates how static configuration variables and dynamic date variables work together.
 #
 # URL Template:
-# https://api.ehr.com/{environment}/{api_version}/changes?tenant={tenant_code}&since={since_date}
+# https://api.ci.example/{environment}/{api_version}/changes?org={org_code}&since={since_date}
 #
 # Resolved Example:
-# https://api.ehr.com/production/v2/changes?tenant=HOSP001&since=2025-01-15T12:00:00Z
+# https://api.ci.example/production/v2/changes?org=ORG001&since=2025-01-15T12:00:00Z
 
 name: combined-variables-example
 version: 1.0.0
@@ -18,7 +18,7 @@ plugin_location: ./plugins/GenericJsonParser.dll
 configuration:
   environment: production
   api_version: v2
-  tenant_code: HOSP001
+  org_code: ORG001
   region: us-east-1
 
 # Dynamic date variables
@@ -39,16 +39,16 @@ scheduler:
   cron_expression: "0 * * * *"  # Every hour
   queue: default
   server:
-    name: ehr-change-feed
-    # URL uses BOTH static variables {environment}, {api_version}, {tenant_code}
+    name: ci-change-feed
+    # URL uses BOTH static variables {environment}, {api_version}, {org_code}
     # AND date variables {since_date}, {until_date}
-    address: "https://api.ehr.com/{environment}/{api_version}/changes?tenant={tenant_code}&region={region}&since={since_date}&until={until_date}"
+    address: "https://api.ci.example/{environment}/{api_version}/changes?org={org_code}&region={region}&since={since_date}&until={until_date}"
     type: http
     authentication:
       type: oauth2
-      token_url: "https://api.ehr.com/oauth/token"
-      client_id_env: EHR_CLIENT_ID
-      client_secret_env: EHR_CLIENT_SECRET
+      token_url: "https://api.ci.example/oauth/token"
+      client_id_env: CI_CLIENT_ID
+      client_secret_env: CI_CLIENT_SECRET
     timeout_seconds: 60
 
 pagination:
@@ -60,11 +60,11 @@ forwarding:
   destinations:
     - name: change-stream-processor
       type: http
-      url: "https://internal.com/api/changes/{region}"
+      url: "https://internal.example.com/api/changes/{region}"
       method: POST
       headers:
         X-Environment: "{environment}"
-        X-Tenant: "{tenant_code}"
+        X-Org: "{org_code}"
       retry_policy:
         max_attempts: 3
         backoff: exponential
@@ -75,5 +75,5 @@ telemetry:
 
 # Resolution order:
 # 1. Date variables are resolved first: {since_date}, {until_date}
-# 2. Static variables are resolved second: {environment}, {api_version}, {tenant_code}, {region}
+# 2. Static variables are resolved second: {environment}, {api_version}, {org_code}, {region}
 # 3. Final URL is fully resolved

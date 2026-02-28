@@ -158,11 +158,11 @@ All tenants and endpoints inherit this configuration.
 
 ```yaml
 tenants:
-  - tenant_id: MAIN_HOSPITAL
+  - tenant_id: ORG_MAIN
     # Uses global date variables
     
-  - tenant_id: RURAL_CLINIC
-    # Override for this tenant only
+  - tenant_id: EDGE_ORG
+    # Override for this org only
     date_variables:
       - name: lookback_date
         offset_expression: "-4h"  # Longer lookback
@@ -174,7 +174,7 @@ tenants:
 
 ```yaml
 endpoints:
-  - endpoint_id: Patient
+  - endpoint_id: Runs
     # Override for this endpoint only
     date_variables:
       - name: lookback_date
@@ -205,10 +205,10 @@ timezone: "Asia/Tokyo"
 ## Complete Example
 
 ```yaml
-name: patient-updates-with-lookback
+name: ci-updates-with-lookback
 version: 1.0.0
 type: poller
-plugin_location: ./plugins/FhirParser.dll
+plugin_location: ./plugins/Parser.dll
 
 # Static variables
 configuration:
@@ -226,12 +226,12 @@ scheduler:
   cron_expression: "0 * * * *"  # Every hour
   queue: default
   server:
-    name: ehr-api
+    name: ci-api
     # Combine static and date variables
-    address: "https://api.ehr.com/{environment}/{api_version}/patients?since={since_timestamp}"
+    address: "https://api.ci.example/{environment}/{api_version}/runs?since={since_timestamp}"
     authentication:
       type: oauth2
-      token_url: https://api.ehr.com/oauth/token
+      token_url: https://api.ci.example/oauth/token
       client_id_env: CLIENT_ID
       client_secret_env: CLIENT_SECRET
 
@@ -245,15 +245,15 @@ forwarding:
   destinations:
     - name: warehouse
       type: http
-      url: https://warehouse.internal.com/api/patients
+      url: https://warehouse.example.com/api/ingest
       method: POST
 ```
 
 **Resolved URL** (at 2025-01-15 15:00 UTC):
 ```
-Page 1: https://api.ehr.com/prod/v2/patients?since=1736942400&offset=0&limit=100
-Page 2: https://api.ehr.com/prod/v2/patients?since=1736942400&offset=100&limit=100
-Page 3: https://api.ehr.com/prod/v2/patients?since=1736942400&offset=200&limit=100
+Page 1: https://api.ci.example/prod/v2/runs?since=1736942400&offset=0&limit=100
+Page 2: https://api.ci.example/prod/v2/runs?since=1736942400&offset=100&limit=100
+Page 3: https://api.ci.example/prod/v2/runs?since=1736942400&offset=200&limit=100
 ```
 
 ## Variable Resolution Order
@@ -272,7 +272,7 @@ For non-standard APIs with pagination in the URL path:
 
 ```yaml
 configuration:
-  patient_id: "12345"
+  run_id: "12345"
   page_size: "50"
 
 date_variables:
@@ -283,7 +283,7 @@ date_variables:
 scheduler:
   server:
     # Pagination in path: /{page}/{size}
-    address: "https://api.com/Patients/{patient_id}/{page}/{page_size}?since={lookback_date}"
+    address: "https://api.ci.example/Jobs/{run_id}/{page}/{page_size}?since={lookback_date}"
 
 pagination:
   strategy: "page-based"
@@ -296,9 +296,9 @@ pagination:
 
 **Result**:
 ```
-Page 1: https://api.com/Patients/12345/1/50?since=2025-01-15
-Page 2: https://api.com/Patients/12345/2/50?since=2025-01-15
-Page 3: https://api.com/Patients/12345/3/50?since=2025-01-15
+Page 1: https://api.ci.example/Jobs/12345/1/50?since=2025-01-15
+Page 2: https://api.ci.example/Jobs/12345/2/50?since=2025-01-15
+Page 3: https://api.ci.example/Jobs/12345/3/50?since=2025-01-15
 ```
 
 ? **Works with both query parameters AND path-based pagination!**

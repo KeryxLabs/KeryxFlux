@@ -4,8 +4,8 @@ namespace KeryxFlux.Domain.Utilities;
 
 /// <summary>
 /// Resolves path templates with variable substitution.
-/// Example: "/api/{environment}/patients/{business_id}" with {environment: "prod", business_id: "123"}
-/// becomes: "/api/prod/patients/123"
+/// Example: "/api/{environment}/ci/{org_id}" with {environment: "prod", org_id: "123"}
+/// becomes: "/api/prod/ci/123"
 /// </summary>
 public static class PathTemplateResolver
 {

@@ -8,7 +8,7 @@ Run these searches to find ANY remaining healthcare references:
 
 ```powershell
 # In PowerShell, from repo root:
-Get-ChildItem -Recurse -Include *.cs,*.yaml,*.yml,*.md,*.json -Exclude bin,obj,node_modules | Select-String -Pattern "patient|medication|pharmacy|hospital|clinical|medical|fhir|hl7|epic|cerner|athena|emr|ehr" -CaseSensitive:$false | Select-Object -First 50
+Get-ChildItem -Recurse -Include *.cs,*.yaml,*.yml,*.md,*.json -Exclude bin,obj,node_modules | Select-String -Pattern "job|artifact|storage|datacenter|operational|system|api|webhook|platform|system|platform|system|processor" -CaseSensitive:$false | Select-Object -First 50
 ```
 
 **Expected result:** Should only find these files you already reviewed:
@@ -104,7 +104,7 @@ git status
 # Should show: "On branch master, nothing to commit, working tree clean"
 
 # Search for healthcare terms ONE MORE TIME
-grep -r "patient\|medication\|pharmacy\|hospital" --include="*.md" --include="*.cs" --include="*.yaml"
+grep -r "job\|artifact\|storage\|datacenter" --include="*.md" --include="*.cs" --include="*.yaml"
 # Should return: Only this checklist file
 
 # Check remote

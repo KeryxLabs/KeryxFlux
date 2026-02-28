@@ -69,9 +69,9 @@ type: poller
 description: Poll an HTTP endpoint on a schedule
 
 # Configuration variables
-configuration:
-  environment: production
-  api_base: https://api.example.com
+  configuration:
+    environment: production
+    api_base: https://api.ci.example
 
 # Date variables for dynamic time-based queries
 date_variables:
