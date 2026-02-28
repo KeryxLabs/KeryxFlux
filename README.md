@@ -20,7 +20,7 @@ KeryxFlux is a modern, horizontally scalable data orchestration framework that e
 ### Key Features
 
 ✨ **Bi-Directional Communication**
-- Receive data via HTTP, TCP (MLLP), RabbitMQ, Kafka
+- Receive data via HTTP, RabbitMQ, Kafka, gRPC
 - Send data to HTTP endpoints, message queues, event streams
 
 ✨ **DevOps-First**
@@ -79,7 +79,7 @@ KeryxFlux follows Domain-Driven Design (DDD) with Hexagonal Architecture:
 src/
  KeryxFlux.Domain          # Pure domain logic, models, ports
  KeryxFlux.Application     # Use cases, orchestration
- KeryxFlux.Infrastructure  # Adapters (HTTP, RabbitMQ, Kafka, TCP)
+ KeryxFlux.Infrastructure  # Adapters (HTTP, RabbitMQ, Kafka, gRPC)
  KeryxFlux.Contracts       # Plugin developer contracts
  KeryxFlux.Host            # Unified service host
  KeryxFlux.CLI             # Validate, Create, Debug YAML files (Dockets)
@@ -94,13 +94,86 @@ Scale horizontally by adding more nodes while keeping a single Main instance.
 
 ---
 
+
+## Supported Protocols
+
+KeryxFlux provides first-class support for multiple communication protocols:
+
+### Receivers (Inbound)
+- **HTTP** - REST endpoints, webhooks, API receivers
+- **RabbitMQ** - AMQP message consumers with exchange binding
+- **Kafka** - Topic consumers with consumer group support
+- **gRPC** - gRPC service endpoints for high-performance RPC
+
+### Senders (Outbound)
+- **HTTP** - REST API calls, webhooks
+- **RabbitMQ** - Message publishing to exchanges/queues
+- **Kafka** - Topic producers with partitioning
+- **gRPC** - gRPC client calls to remote services
+
+All protocols support:
+- Dynamic docket-based configuration
+- Hot-reload without restart
+- Multi-protocol forwarding (receive via one, send via another)
+- Connection pooling and health checks
+
+---
+
+## Plugin System
+
+KeryxFlux provides three plugin interfaces for different transformation needs:
+
+### IReceiverPlugin
+Standard synchronous transformations on received messages.
+
+**Use when:** Parse JSON, validate schemas, enrich data with lookups
+
+```csharp
+public interface IReceiverPlugin : IKeryxFluxPlugin
+{
+    TransformationResult Transform(byte[] data, TransformationContext context);
+}
+```
+
+### IPollerPlugin  
+Multi-step workflows with sequential HTTP requests.
+
+**Use when:** Paginated APIs, fetching related resources, multi-step enrichment
+
+```csharp
+public interface IPollerPlugin : IKeryxFluxPlugin
+{
+    InitialPollingResult ParseInitialResponse(byte[] source, TransformationContext context);
+    StepTransformationResult TransformItemStep(NextStep currentStep, byte[] stepResponse, AccumulatedState state, string itemId);
+}
+```
+
+### IModelPlugin
+AI/ML model-enhanced transformations.
+
+**Use when:** Calling AI models (Ollama, OpenAI), LLM enrichment, classification
+
+```csharp
+public interface IModelPlugin : IKeryxFluxPlugin
+{
+    ModelInvocationPlan ParseInitialMessage(byte[] data, TransformationContext context);
+    ModelStepResult TransformModelResponse(ModelStep currentStep, byte[] modelResponse, AccumulatedState state);
+}
+```
+
+**Pattern:** Plugin orchestrates workflow, infrastructure handles HTTP/gRPC calls.
+
+See `plugins/` directory for example implementations.
+
+---
+
 ## Quick Start
 
 ### Prerequisites
 - .NET 8.0 SDK
 - Docker & Docker Compose
 - Redis (for distributed state)
-- RabbitMQ or Kafka (optional, for messaging)
+- RabbitMQ, Kafka, or gRPC services (optional, for messaging)
 
 ### Run Locally
 
@@ -356,4 +429,5 @@ Apache 2.0 - see [LICENSE](LICENSE) for details.
 Part of the **KeryxLabs** ecosystem, building modern tools for data flows.
 
 ---
+
 
