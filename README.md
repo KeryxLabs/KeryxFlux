@@ -185,7 +185,7 @@ keryxflux debug run-sync.yaml
 name: webhook-event-receiver
 version: 1.0.0
 type: receiver
-plugin_location: ./plugins/HL7Parser.dll
+plugin_location: ./plugins/DataParser.dll
 
 receiver:
   type: http
@@ -193,7 +193,7 @@ receiver:
   authentication:
     type: api_key
     header: X-API-Key
-    secret_env: HL7_API_KEY
+    secret_env: ORG_API_KEY
 
 forwarding:
   destinations:
@@ -225,8 +225,8 @@ scheduler:
         type: api_key
         header: X-API-Key
         secret_env: WEATHER_API_KEY
-      client_id_env: EPIC_CLIENT_ID
-      client_secret_env: EPIC_SECRET
+      client_id_env: EXTERNAL_CLIENT_ID
+      client_secret_env: EXTERNAL_SECRET
 
 forwarding:
   destinations:
@@ -242,7 +242,7 @@ forwarding:
 name: weather-updates-lookback
 version: 1.0.0
 type: poller
-plugin_location: ./plugins/FhirParser.dll
+plugin_location: ./plugins/DataParser.dll
 
 # Date variable for 1-hour lookback window
 date_variables:
@@ -261,8 +261,8 @@ scheduler:
     authentication:
       type: oauth2
       token_url: https://api.ci.example/oauth/token
-      client_id_env: EPIC_CLIENT_ID
-      client_secret_env: EPIC_SECRET
+      client_id_env: EXTERNAL_CLIENT_ID
+      client_secret_env: EXTERNAL_SECRET
 
 forwarding:
   destinations:

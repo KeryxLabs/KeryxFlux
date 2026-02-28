@@ -12,7 +12,7 @@ public sealed class InitialPollingResult
     public bool IsSuccess { get; }
 
     /// <summary>
-    /// Extracted items (e.g., list of patients, orders, appointments)
+    /// Extracted items (e.g., list of jobs, orders, articles) 
     /// Each item becomes an independent workflow with its own steps and state.
     /// </summary>
     public IReadOnlyList<PollingItem> Items { get; }

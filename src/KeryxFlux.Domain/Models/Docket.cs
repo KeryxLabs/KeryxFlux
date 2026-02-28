@@ -59,8 +59,8 @@ public sealed class Docket
 
     /// <summary>
     /// Configuration values for templating and dynamic behavior.
-    /// Example: business_id, environment, api_version, etc.
-    /// Used for path templating like: /api/{environment}/patients/{business_id}
+    /// Example: org_id, environment, api_version, etc.
+    /// Used for path templating like: /api/{environment}/jobs/{org_id}
     /// </summary>
     [YamlMember(Alias = "configuration")]
     public Dictionary<string, string>? Configuration { get; init; }
@@ -68,7 +68,7 @@ public sealed class Docket
     /// <summary>
     /// Date/time variables for dynamic URL generation with time offsets.
     /// Example: lookback windows, backfill scenarios
-    /// Used for path templating like: /api/patients?updated_after={lookback_date}
+    /// Used for path templating like: /api/jobs?updated_after={lookback_date}
     /// </summary>
     [YamlMember(Alias = "date_variables")]
     public List<DateVariableConfiguration>? DateVariables { get; init; }
@@ -91,7 +91,7 @@ public sealed class Docket
 
     /// <summary>
     /// List of endpoints (resources, APIs) to poll for each tenant.
-    /// Creates a tenant × endpoint matrix for parallel polling.
+    /// Creates a tenant endpoint matrix for parallel polling.
     /// </summary>
     [YamlMember(Alias = "endpoints")]
     public List<EndpointConfiguration>? Endpoints { get; init; }

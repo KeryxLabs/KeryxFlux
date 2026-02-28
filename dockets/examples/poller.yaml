@@ -56,7 +56,7 @@ forwarding:
       
     - name: backup-storage
       type: http
-      url: https://backup.example.com/api/patients
+      url: https://backup.example.com/api/jobs
       method: POST
       retry_policy:
         max_attempts: 3

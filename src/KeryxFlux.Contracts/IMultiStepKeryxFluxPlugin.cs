@@ -4,7 +4,7 @@ namespace KeryxFlux.Contracts;
 /// Plugin interface for poller-type dockets (scheduled polling of external APIs).
 /// 
 /// Pollers work in two phases:
-/// 1. ParseInitialResponse: Extract items from initial poll (e.g., list of patients)
+/// 1. ParseInitialResponse: Extract items from initial poll (e.g., list of articles, jobs)
 /// 2. TransformItemStep: Process each step for an item, deciding the next step
 /// 
 /// Each item becomes an independent workflow with sequential steps.
@@ -16,7 +16,7 @@ public interface IPollerPlugin : IKeryxFluxPlugin
     /// Parse the initial polling response to extract individual items.
     /// Each item will be processed as an independent workflow.
     /// 
-    /// Example: Initial poll returns 10 patients ? Create 10 independent workflows
+    /// Example: Initial poll returns 10 items ? Create 10 independent workflows
     /// </summary>
     /// <param name="source">Raw bytes from initial poll</param>
     /// <param name="context">Execution context</param>
@@ -31,9 +31,9 @@ public interface IPollerPlugin : IKeryxFluxPlugin
     /// - Complete(finalData) ? This item is done, forward the message
     /// 
     /// Example flow:
-    /// 1. Step: GET /Patient/p1 ? ContinueWith(GET /Patient/p1/Appointment)
-    /// 2. Step: GET /Patient/p1/Appointment ? ContinueWith(GET /Patient/p1/Medication)
-    /// 3. Step: GET /Patient/p1/Medication ? Complete(aggregatedBundle)
+    /// 1. Step: GET /Job/j1 ? ContinueWith(GET /Job/j1/Details)
+    /// 2. Step: GET /Job/j1/Details ? ContinueWith(GET /Job/j1/Status)
+    /// 3. Step: GET /Job/j1/Status ? Complete(aggregatedBundle)
     /// </summary>
     /// <param name="currentStep">The step that just executed</param>
     /// <param name="stepResponse">Response from that step</param>

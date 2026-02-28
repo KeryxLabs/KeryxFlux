@@ -7,7 +7,7 @@ type: Poller
 plugin_location: plugins/KeryxFlux.Plugins.CIPaginated.dll
 
 configuration:
-  business_id: "12345"
+  team_code: "12345"
   environment: "production"
 
 scheduler:
@@ -42,5 +42,5 @@ forwarding:
   destinations:
     - name: internal-db
       type: http
-      url: "https://internal.example.com/api/{business_id}/Jobs/bulk"
+      url: "https://internal.example.com/api/{team_code}/Jobs/bulk"
       timeout_seconds: 120

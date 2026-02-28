@@ -28,8 +28,8 @@ This directory contains example docket configurations for KeryxFlux.
 
 3. Set required environment variables:
    ```bash
-   export HL7_API_KEY="your-api-key"
-   export EHR_TOKEN="your-bearer-token"
+   export ORG_API_KEY="your-api-key"
+   export CI_TOKEN="your-bearer-token"
    export RABBITMQ_CONNECTION="amqp://user:pass@localhost:5672"
    ```
 

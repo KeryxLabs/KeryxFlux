@@ -8,7 +8,7 @@ plugin_location: plugins/KeryxFlux.Plugins.DataParser.dll
 
 # Configuration section for JOBh templating and dynamic behavior
 configuration:
-  business_id: "12345"
+  team_code: "12345"
   environment: "production"
   api_version: "v1"
   org_code: "MAIN"
@@ -28,8 +28,8 @@ forwarding:
     # Destination 1: Internal API with multiple variables
     - name: internal-api
       type: http
-      # Variables resolved at runtime: {business_id}, {org_code}
-      url: "https://internal.example.com/api/{business_id}/locations/{org_code}/Jobs"
+      # Variables resolved at runtime: {team_code}, {org_code}
+      url: "https://internal.example.com/api/{team_code}/locations/{org_code}/Jobs"
       timeout_seconds: 30
 
     # Destination 2: Analytics endpoint with date variable

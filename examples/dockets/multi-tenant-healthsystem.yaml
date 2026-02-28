@@ -99,7 +99,7 @@ overrides:
       priority_location: "true"
       run_filter: "status=active"
     pagination:
-      page_size: 50  # Smaller batches for VIP patients
+      page_size: 50  # Smaller batches for VIP handling
       max_pages: 30
       
   # NORTH is low priority, runs less frequently

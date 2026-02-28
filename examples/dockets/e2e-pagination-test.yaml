@@ -9,7 +9,7 @@ plugin_location: plugins/KeryxFlux.Plugins.PaginatedExample/bin/Debug/net8.0/Ker
 
 # Configuration variables for JOBh templating and plugin logic
 configuration:
-  business_id: "12345"
+  team_code: "12345"
   environment: "sandbox"
   org_code: "MAIN"
 
@@ -32,7 +32,7 @@ scheduler:
   pagination:
     strategy: "offset-limit"
     page_size: 20  # CI allows up to 100, using 20 for testing
-    max_pages: 5   # Safety limit (20 items × 5 pages = 100 Jobs max)
+    max_pages: 5   # Safety limit (20 items ï¿½ 5 pages = 100 Jobs max)
     
     # CI API-specific pagination options
     options:
