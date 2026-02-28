@@ -128,10 +128,28 @@ public sealed class ReceiverConfiguration
     public bool? UseTls { get; init; } = true;
 
     /// <summary>
-    /// TCP port (for TCP receivers)
+    /// TCP specific: Port to listen on
     /// </summary>
     [YamlMember(Alias = "port")]
     public int? Port { get; init; }
+    
+    /// <summary>
+    /// TCP specific: Message framing strategy (mllp, length_prefixed, delimiter)
+    /// </summary>
+    [YamlMember(Alias = "framing")]
+    public string? Framing { get; init; } = "mllp";
+    
+    /// <summary>
+    /// TCP specific: Custom delimiter for delimiter-based framing
+    /// </summary>
+    [YamlMember(Alias = "delimiter")]
+    public string? Delimiter { get; init; } = "\n";
+    
+    /// <summary>
+    /// TCP specific: Keep connection open for multiple messages
+    /// </summary>
+    [YamlMember(Alias = "persistent_connection")]
+    public bool? PersistentConnection { get; init; } = true;
 
     /// <summary>
     /// Authentication configuration

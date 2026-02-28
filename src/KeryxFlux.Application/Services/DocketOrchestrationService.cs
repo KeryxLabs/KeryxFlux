@@ -206,6 +206,28 @@ public class DocketOrchestrationService : IHostedService
                 }
             });
         }
+        // Handle TCP receivers
+        else if (receiverType == "tcp")
+        {
+            var tcpReceiver = _serviceProvider.GetService<ITcpReceiverService>();
+            if (tcpReceiver == null)
+            {
+                _logger.LogError("ITcpReceiverService not registered");
+                return;
+            }
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await tcpReceiver.RegisterReceiverForDocketAsync(docket);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to register TCP receiver for docket {DocketName}", docket.Name);
+                }
+            });
+        }
         // HTTP receivers don't need explicit registration (handled by ASP.NET endpoints)
         else if (receiverType == "http")
         {
@@ -271,6 +293,23 @@ public class DocketOrchestrationService : IHostedService
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to unregister gRPC receiver for docket {DocketName}", docket.Name);
+                }
+            });
+        }
+        else if (receiverType == "tcp")
+        {
+            var tcpReceiver = _serviceProvider.GetService<ITcpReceiverService>();
+            if (tcpReceiver == null) return;
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await tcpReceiver.UnregisterReceiverForDocketAsync(docket.Name);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to unregister TCP receiver for docket {DocketName}", docket.Name);
                 }
             });
         }

@@ -1,0 +1,39 @@
+# TCP Receiver Example - MLLP (Healthcare HL7)
+# Demonstrates TCP receiver with MLLP framing for HL7 messaging
+
+name: hl7-mllp-receiver
+version: 1.0.0
+type: receiver
+plugin_location: ./plugins/Hl7Parser.dll
+
+receiver:
+  type: tcp
+  port: 2575
+  framing: mllp  # Healthcare HL7 standard
+  persistent_connection: true  # Keep connections open
+
+forwarding:
+  destinations:
+    # Forward to another TCP endpoint (ADT feed)
+    - name: adt-system
+      type: tcp
+      host: "localhost"
+      port: 2576
+      framing: mllp
+      persistent: true
+    
+    # Also archive to HTTP endpoint
+    - name: hl7-archive
+      type: http
+      url: "http://localhost:8080/api/hl7/archive"
+      method: POST
+    
+    # Publish to Kafka for downstream processing
+    - name: hl7-events
+      type: kafka
+      bootstrap_servers: "localhost:9092"
+      topic: "hl7-messages"
+
+telemetry:
+  enabled: true
+  trace_headers: true

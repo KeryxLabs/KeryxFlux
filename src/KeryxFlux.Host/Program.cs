@@ -11,6 +11,7 @@ using KeryxFlux.Infrastructure.Senders;
 using KeryxFlux.Infrastructure.MessageBrokers.RabbitMq;
 using KeryxFlux.Infrastructure.MessageBrokers.Kafka;
 using KeryxFlux.Infrastructure.MessageBrokers.Grpc;
+using KeryxFlux.Infrastructure.MessageBrokers.Tcp;
 using KeryxFlux.Host.Extensions;
 using Hangfire;
 using Hangfire.Redis.StackExchange;
@@ -38,11 +39,15 @@ builder.Services.AddSingleton<IKafkaConsumerService, KafkaConsumer>();
 // Register gRPC services
 builder.Services.AddSingleton<IGrpcReceiverService, GrpcReceiver>();
 
+// Register TCP services
+builder.Services.AddSingleton<ITcpReceiverService, TcpReceiver>();
+
 // Register senders - looked up by their Type property
 builder.Services.AddSingleton<ISender, HttpSender>();
 builder.Services.AddSingleton<ISender, RabbitMqSender>();
 builder.Services.AddSingleton<ISender, KafkaProducer>();
 builder.Services.AddSingleton<ISender, GrpcSender>();
+builder.Services.AddSingleton<ISender, TcpSender>();
 
 // Register polling jobs
 builder.Services.AddScoped<IPollJob, TenantEndpointPollJob>();

@@ -20,7 +20,7 @@ KeryxFlux is a modern, horizontally scalable data orchestration framework that e
 ### Key Features
 
 ✨ **Bi-Directional Communication**
-- Receive data via HTTP, RabbitMQ, Kafka, gRPC
+- Receive data via HTTP, TCP, RabbitMQ, Kafka, gRPC
 - Send data to HTTP endpoints, message queues, event streams
 
 ✨ **DevOps-First**
@@ -79,7 +79,7 @@ KeryxFlux follows Domain-Driven Design (DDD) with Hexagonal Architecture:
 src/
  KeryxFlux.Domain          # Pure domain logic, models, ports
  KeryxFlux.Application     # Use cases, orchestration
- KeryxFlux.Infrastructure  # Adapters (HTTP, RabbitMQ, Kafka, gRPC)
+ KeryxFlux.Infrastructure  # Adapters (HTTP, TCP, RabbitMQ, Kafka, gRPC)
  KeryxFlux.Contracts       # Plugin developer contracts
  KeryxFlux.Host            # Unified service host
  KeryxFlux.CLI             # Validate, Create, Debug YAML files (Dockets)

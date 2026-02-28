@@ -94,6 +94,15 @@ public sealed class DestinationConfiguration
     
     [YamlMember(Alias = "port")]
     public int? Port { get; init; }
+    
+    [YamlMember(Alias = "framing")]
+    public string? Framing { get; init; } = "mllp";
+    
+    [YamlMember(Alias = "delimiter")]
+    public string? Delimiter { get; init; } = "\n";
+    
+    [YamlMember(Alias = "persistent")]
+    public bool? Persistent { get; init; } = true;
 
     // Common
     [YamlMember(Alias = "timeout_seconds")]

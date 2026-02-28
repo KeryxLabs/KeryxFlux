@@ -191,6 +191,24 @@ public sealed class ProcessMessageCommandHandler : IRequestHandler<ProcessMessag
                     if (destination.UseTls.HasValue)
                         headers["use_tls"] = destination.UseTls.Value.ToString();
                 }
+                // Add TCP-specific headers
+                else if (destination.Type.Equals("tcp", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.IsNullOrEmpty(destination.Host))
+                        headers["host"] = destination.Host;
+                    
+                    if (destination.Port.HasValue)
+                        headers["port"] = destination.Port.Value.ToString();
+                    
+                    if (!string.IsNullOrEmpty(destination.Framing))
+                        headers["framing"] = destination.Framing;
+                    
+                    if (!string.IsNullOrEmpty(destination.Delimiter))
+                        headers["delimiter"] = destination.Delimiter;
+                    
+                    if (destination.Persistent.HasValue)
+                        headers["persistent"] = destination.Persistent.Value.ToString();
+                }
 
                 var outboundMessage = new OutboundMessage
                 {
