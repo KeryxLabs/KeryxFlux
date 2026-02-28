@@ -1,55 +1,82 @@
-# Example Docket Files
+# Example Dockets
 
-This directory contains example docket configurations for KeryxFlux.
+This directory contains example docket configurations demonstrating KeryxFlux capabilities.
 
 ## Available Examples
 
-### Receivers (Inbound)
-- **`http-receiver.yaml`** - Receives Event messages via HTTP POST
-- **`rabbitmq-consumer.yaml`** - Consumes orders from RabbitMQ queue
-- **`kafka-consumer.yaml`** - Consumes events from Kafka topic _(coming soon)_
-- **`tcp-receiver.yaml`** - Receives Event messages via TCP/MLLP _(coming soon)_
+### Receivers
 
-### Pollers (Scheduled Outbound)
-- **`poller.yaml`** - Scheduled API job sync every 15 minutes
+**HTTP Receiver** (`http-receiver.yaml`)
+- Receives webhook events via HTTP endpoint
+- Demonstrates: API key authentication, rate limiting
+- Forwards to: HTTP, RabbitMQ, Kafka
 
-## Using These Examples
+**RabbitMQ Consumer** (`rabbitmq-consumer.yaml`)
+- Consumes messages from RabbitMQ queue
+- Demonstrates: Exchange binding, routing keys, durable queues
+- Forwards to: HTTP webhook, Kafka topic
 
-1. Copy an example file to the `/dockets` directory:
-   ```bash
-   cp dockets/examples/http-receiver.yaml dockets/my-receiver.yaml
-   ```
+**Kafka Consumer** (`kafka-consumer.yaml`)
+- Consumes messages from Kafka topic
+- Demonstrates: Consumer groups, auto offset reset
+- Forwards to: Kafka, RabbitMQ, HTTP
 
-2. Edit the configuration:
-   - Update `name` to be unique
-   - Set your `plugin_location`
-   - Configure authentication with environment variables
-   - Update destination URLs
+**gRPC Receiver** (`grpc-receiver.yaml`)
+- Receives data via gRPC service endpoint
+- Demonstrates: gRPC integration, multi-protocol forwarding
+- Forwards to: Kafka, RabbitMQ, gRPC
 
-3. Set required environment variables:
-   ```bash
-   export ORG_API_KEY="your-api-key"
-   export CI_TOKEN="your-bearer-token"
-   export RABBITMQ_CONNECTION="amqp://user:pass@localhost:5672"
-   ```
+### Pollers
 
-4. Place your plugin DLL in `/plugins` directory
+**HTTP Poller** (`poller.yaml`)
+- Polls external REST API on schedule
+- Demonstrates: Date variables, pagination, multi-step workflows
+- Forwards to: HTTP endpoint
 
-5. Restart KeryxFlux or wait for hot-reload (Main mode)
+### Model-Enhanced
 
-## Configuration Reference
+**AI Enricher** (`ai-enricher.yaml`)
+- Enriches incoming data using AI model invocations
+- Demonstrates: IModelPlugin interface, model endpoint calls
+- Requires: Local Ollama or compatible model endpoint
+- Forwards to: HTTP endpoint
 
-See [ARCHITECTURE.md](../../docs/ARCHITECTURE.md) for detailed YAML schema documentation.
+## Quick Start
 
-## Creating Custom Dockets
-
-Docket files must end with `-docket.yaml` or `-docket.yml` to be automatically discovered.
-
-**Naming convention:**
+1. Copy an example to your `dockets/` directory:
+```bash
+cp dockets/examples/http-receiver.yaml dockets/my-receiver.yaml
 ```
-dockets/
-??? Event-receiver-docket.yaml       ? Discovered
-??? job-sync-docket.yml        ? Discovered
-??? my-config.yaml                 ? Not discovered (missing suffix)
-??? test-docket.yaml               ? Discovered
+
+2. Edit configuration values:
+```yaml
+name: my-receiver           # Change this
+receiver:
+  endpoint: /my-endpoint    # Change this
+forwarding:
+  destinations:
+    - url: http://your-endpoint  # Change this
 ```
+
+3. Validate the docket:
+```bash
+keryxflux validate dockets/my-receiver.yaml
+```
+
+4. KeryxFlux will auto-load from `dockets/` directory on startup.
+
+## Plugin Requirements
+
+Each docket requires a compiled plugin DLL:
+
+- `http-receiver.yaml` ? Requires plugin implementing `IReceiverPlugin`
+- `poller.yaml` ? Requires plugin implementing `IPollerPlugin`
+- `ai-enricher.yaml` ? Requires plugin implementing `IModelPlugin`
+
+See `plugins/` directory for example plugin implementations.
+
+## Documentation
+
+- [Architecture Overview](../../README.md#architecture)
+- [Plugin Development Guide](../../README.md#plugins)
+- [Quick Start Guide](../../README.md#quick-start)
