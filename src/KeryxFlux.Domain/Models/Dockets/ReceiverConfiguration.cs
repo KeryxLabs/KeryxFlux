@@ -24,6 +24,60 @@ public sealed class ReceiverConfiguration
     /// </summary>
     [YamlMember(Alias = "queue_or_topic")]
     public string? QueueOrTopic { get; init; }
+    
+    /// <summary>
+    /// RabbitMQ specific: Queue name
+    /// </summary>
+    [YamlMember(Alias = "queue_name")]
+    public string? QueueName { get; init; }
+    
+    /// <summary>
+    /// RabbitMQ specific: Exchange name
+    /// </summary>
+    [YamlMember(Alias = "exchange_name")]
+    public string? ExchangeName { get; init; }
+    
+    /// <summary>
+    /// RabbitMQ specific: Exchange type (topic, fanout, direct, headers)
+    /// </summary>
+    [YamlMember(Alias = "exchange_type")]
+    public string? ExchangeType { get; init; }
+    
+    /// <summary>
+    /// RabbitMQ specific: Routing key pattern
+    /// </summary>
+    [YamlMember(Alias = "routing_key")]
+    public string? RoutingKey { get; init; }
+    
+    /// <summary>
+    /// Message broker connection string (RabbitMQ: amqp://..., Kafka: bootstrap servers)
+    /// </summary>
+    [YamlMember(Alias = "connection_string")]
+    public string? ConnectionString { get; init; }
+    
+    /// <summary>
+    /// Whether queue/exchange should be durable (survives broker restart)
+    /// </summary>
+    [YamlMember(Alias = "durable")]
+    public bool? Durable { get; init; } = true;
+    
+    /// <summary>
+    /// Whether queue should be auto-deleted when no consumers
+    /// </summary>
+    [YamlMember(Alias = "auto_delete")]
+    public bool? AutoDelete { get; init; } = false;
+    
+    /// <summary>
+    /// Prefetch count for consumer (how many messages to prefetch)
+    /// </summary>
+    [YamlMember(Alias = "prefetch_count")]
+    public int? PrefetchCount { get; init; }
+    
+    /// <summary>
+    /// Number of concurrent consumers to start
+    /// </summary>
+    [YamlMember(Alias = "concurrent_consumers")]
+    public int? ConcurrentConsumers { get; init; }
 
     /// <summary>
     /// TCP port (for TCP receivers)

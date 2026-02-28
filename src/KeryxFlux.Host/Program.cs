@@ -5,8 +5,11 @@ using KeryxFlux.Application.FileSystem;
 using KeryxFlux.Application.Jobs;
 using KeryxFlux.Domain.Abstractions;
 using KeryxFlux.Domain.Jobs;
+using KeryxFlux.Domain.Ports;
 using KeryxFlux.Infrastructure.Receivers;
 using KeryxFlux.Infrastructure.Senders;
+using KeryxFlux.Infrastructure.MessageBrokers.RabbitMq;
+using KeryxFlux.Infrastructure.Factories;
 using KeryxFlux.Host.Extensions;
 using Hangfire;
 using Hangfire.Redis.StackExchange;
@@ -24,9 +27,16 @@ builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IPluginManager, PluginManager>();
 builder.Services.AddSingleton<IDocketManager, DocketManager>();
 
-// Register receivers and senders
-builder.Services.AddSingleton<KeryxFlux.Domain.Ports.IReceiver, HttpReceiver>();
-builder.Services.AddSingleton<KeryxFlux.Domain.Ports.ISender, HttpSender>();
+// Register RabbitMQ connection service
+builder.Services.AddSingleton<IRabbitMqConnectionService, RabbitMqConnectionService>();
+
+// Register receiver and sender factories
+builder.Services.AddSingleton<IReceiverFactory, ReceiverFactory>();
+builder.Services.AddSingleton<ISenderFactory, SenderFactory>();
+
+// Register individual receivers and senders (for legacy/direct use)
+builder.Services.AddSingleton<IReceiver, HttpReceiver>();
+builder.Services.AddSingleton<ISender, HttpSender>();
 
 // Register polling jobs
 builder.Services.AddScoped<IPollJob, TenantEndpointPollJob>();

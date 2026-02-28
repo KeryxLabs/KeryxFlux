@@ -45,17 +45,35 @@ public sealed class DestinationConfiguration
     [YamlMember(Alias = "bootstrap_servers")]
     public string? BootstrapServers { get; init; }
     
+    [YamlMember(Alias = "connection_string")]
+    public string? ConnectionString { get; init; }
+    
     [YamlMember(Alias = "connection_env")]
     public string? ConnectionEnv { get; init; }
     
     [YamlMember(Alias = "exchange")]
     public string? Exchange { get; init; }
     
+    [YamlMember(Alias = "exchange_name")]
+    public string? ExchangeName { get; init; }
+    
+    [YamlMember(Alias = "exchange_type")]
+    public string? ExchangeType { get; init; }
+    
+    [YamlMember(Alias = "queue_name")]
+    public string? QueueName { get; init; }
+    
+    [YamlMember(Alias = "routing_key")]
+    public string? RoutingKey { get; init; }
+    
     [YamlMember(Alias = "topic")]
     public string? Topic { get; init; }
     
     [YamlMember(Alias = "partition_key")]
     public string? PartitionKey { get; init; }
+    
+    [YamlMember(Alias = "durable")]
+    public bool? Durable { get; init; } = true;
 
     // TCP-specific
     [YamlMember(Alias = "host")]

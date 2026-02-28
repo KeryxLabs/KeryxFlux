@@ -1,10 +1,10 @@
 # Example RabbitMQ Consumer Docket
 # Consumes orders from RabbitMQ queue and forwards to ERP system
 
-name: order-processor
+name: rabbitmq-job-consumer
 version: 1.0.0
 type: receiver
-plugin_location: ./plugins/OrderTransformer.dll
+plugin_location: ./plugins/JobParser.dll
 
 # RabbitMQ consumer configuration
 receiver:
@@ -26,18 +26,22 @@ receiver:
 # Forwarding configuration
 forwarding:
   destinations:
-    - name: erp-system
-      type: http
-      url: https://erp.example.com/api/orders
-      method: POST
+    # Forward to another RabbitMQ queue
+    - name: processed-jobs-queue
+      type: rabbitmq
+      connection_string: "amqp://guest:guest@localhost:5672/"
+      exchange_name: "processed-jobs"
+      routing_key: "processed.completed"
+      durable: true
       
+    # Also forward to HTTP webhook
+    - name: http-webhook
+      type: http
+      url: "https://api.example.com/webhooks/jobs"
+      method: POST
       retry_policy:
         max_attempts: 3
-        backoff_strategy: exponential
-        
-      headers:
-        Content-Type: application/json
-        Authorization: Bearer ${ERP_TOKEN}
+        backoff: exponential
 
 # Error handling
 error_handling:
@@ -49,3 +53,5 @@ error_handling:
 telemetry:
   trace_requests: true
   log_level: Information
+  enabled: true
+  trace_headers: true
