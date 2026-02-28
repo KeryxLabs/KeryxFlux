@@ -104,12 +104,14 @@ KeryxFlux provides first-class support for multiple communication protocols:
 - **RabbitMQ** - AMQP message consumers with exchange binding
 - **Kafka** - Topic consumers with consumer group support
 - **gRPC** - gRPC service endpoints for high-performance RPC
+- **TCP** - TCP endpoints for constant feeds
 
 ### Senders (Outbound)
 - **HTTP** - REST API calls, webhooks
 - **RabbitMQ** - Message publishing to exchanges/queues
 - **Kafka** - Topic producers with partitioning
 - **gRPC** - gRPC client calls to remote services
+- **TCP** - TCP sending for fast low level implementations
 
 All protocols support:
 - Dynamic docket-based configuration
